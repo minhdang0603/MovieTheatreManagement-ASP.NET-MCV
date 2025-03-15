@@ -9,8 +9,6 @@ public partial class Movie
 
     public string Title { get; set; } = null!;
 
-    public int? GenreId { get; set; }
-
     public int Duration { get; set; }
 
     public int? DirectorId { get; set; }
@@ -25,9 +23,9 @@ public partial class Movie
 
     public virtual Director? Director { get; set; }
 
-    public virtual Genre? Genre { get; set; }
+	public virtual ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
 
-    public virtual ICollection<Showtime> Showtimes { get; set; } = new List<Showtime>();
+	public virtual ICollection<Showtime> Showtimes { get; set; } = new List<Showtime>();
 
     public virtual MovieStatus? Status { get; set; }
 }

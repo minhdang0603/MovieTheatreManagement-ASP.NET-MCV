@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250305032944_SeedData")]
-    partial class SeedData
+    [Migration("20250313060719_ModifiedSeatTableVer2.0")]
+    partial class ModifiedSeatTableVer20
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,7 +51,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("total_price");
 
                     b.HasKey("BookingId")
-                        .HasName("PK__Booking__5DE3A5B10F6B8EDB");
+                        .HasName("PK__Booking__5DE3A5B19905FE69");
 
                     b.HasIndex("ShowtimeId");
 
@@ -75,7 +75,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("director_name");
 
                     b.HasKey("DirectorId")
-                        .HasName("PK__Director__F5205E49FD2CE489");
+                        .HasName("PK__Director__F5205E49E12CD953");
 
                     b.ToTable("Director", (string)null);
 
@@ -124,7 +124,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("genre_name");
 
                     b.HasKey("GenreId")
-                        .HasName("PK__Genre__18428D420243091E");
+                        .HasName("PK__Genre__18428D425476C2F3");
 
                     b.ToTable("Genre", (string)null);
 
@@ -179,10 +179,6 @@ namespace DataAccess.Migrations
                         .HasColumnType("int")
                         .HasColumnName("duration");
 
-                    b.Property<int?>("GenreId")
-                        .HasColumnType("int")
-                        .HasColumnName("genre_id");
-
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -205,11 +201,9 @@ namespace DataAccess.Migrations
                         .HasColumnName("title");
 
                     b.HasKey("MovieId")
-                        .HasName("PK__Movie__83CDF74908A55B8A");
+                        .HasName("PK__Movie__83CDF7491C0DF4C1");
 
                     b.HasIndex("DirectorId");
-
-                    b.HasIndex("GenreId");
 
                     b.HasIndex("StatusId");
 
@@ -222,7 +216,6 @@ namespace DataAccess.Migrations
                             Description = "A mind-bending thriller.",
                             DirectorId = 1,
                             Duration = 148,
-                            GenreId = 1,
                             ImageUrl = "",
                             ReleaseDate = new DateOnly(2010, 7, 16),
                             StatusId = 1,
@@ -234,7 +227,6 @@ namespace DataAccess.Migrations
                             Description = "A dark comedy crime film.",
                             DirectorId = 2,
                             Duration = 154,
-                            GenreId = 2,
                             ImageUrl = "",
                             ReleaseDate = new DateOnly(1994, 10, 14),
                             StatusId = 3,
@@ -246,11 +238,49 @@ namespace DataAccess.Migrations
                             Description = "Dinosaurs run wild in a theme park.",
                             DirectorId = 3,
                             Duration = 127,
-                            GenreId = 5,
                             ImageUrl = "",
                             ReleaseDate = new DateOnly(1993, 6, 11),
                             StatusId = 3,
                             Title = "Jurassic Park"
+                        });
+                });
+
+            modelBuilder.Entity("Models.MovieGenre", b =>
+                {
+                    b.Property<int>("MovieId")
+                        .HasColumnType("int")
+                        .HasColumnName("movie_id");
+
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int")
+                        .HasColumnName("genre_id");
+
+                    b.HasKey("MovieId", "GenreId");
+
+                    b.HasIndex("GenreId");
+
+                    b.ToTable("MovieGenre", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            MovieId = 1,
+                            GenreId = 1
+                        },
+                        new
+                        {
+                            MovieId = 2,
+                            GenreId = 2
+                        },
+                        new
+                        {
+                            MovieId = 3,
+                            GenreId = 5
+                        },
+                        new
+                        {
+                            MovieId = 3,
+                            GenreId = 1
                         });
                 });
 
@@ -270,7 +300,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("status_name");
 
                     b.HasKey("StatusId")
-                        .HasName("PK__MovieSta__3683B5310B495069");
+                        .HasName("PK__MovieSta__3683B531A6D57002");
 
                     b.ToTable("MovieStatus", (string)null);
 
@@ -308,12 +338,16 @@ namespace DataAccess.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("name");
 
-                    b.Property<int>("SeatsNo")
+                    b.Property<int>("TotalColumns")
                         .HasColumnType("int")
-                        .HasColumnName("seats_no");
+                        .HasColumnName("total_column");
+
+                    b.Property<int>("TotalRows")
+                        .HasColumnType("int")
+                        .HasColumnName("total_row");
 
                     b.HasKey("RoomId")
-                        .HasName("PK__Room__19675A8A6C8EE502");
+                        .HasName("PK__Room__19675A8A72E6B5AE");
 
                     b.ToTable("Room", (string)null);
 
@@ -322,19 +356,22 @@ namespace DataAccess.Migrations
                         {
                             RoomId = 1,
                             Name = "IMAX Theater",
-                            SeatsNo = 100
+                            TotalColumns = 10,
+                            TotalRows = 5
                         },
                         new
                         {
                             RoomId = 2,
                             Name = "Dolby Atmos",
-                            SeatsNo = 80
+                            TotalColumns = 10,
+                            TotalRows = 8
                         },
                         new
                         {
                             RoomId = 3,
                             Name = "Standard Hall",
-                            SeatsNo = 120
+                            TotalColumns = 10,
+                            TotalRows = 12
                         });
                 });
 
@@ -347,13 +384,13 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SeatId"));
 
-                    b.Property<int?>("RoomId")
+                    b.Property<int>("RoomId")
                         .HasColumnType("int")
                         .HasColumnName("room_id");
 
-                    b.Property<int>("SeatNumber")
+                    b.Property<int>("SeatColumn")
                         .HasColumnType("int")
-                        .HasColumnName("seat_number");
+                        .HasColumnName("seat_column");
 
                     b.Property<string>("SeatRow")
                         .IsRequired()
@@ -362,12 +399,12 @@ namespace DataAccess.Migrations
                         .HasColumnType("varchar(10)")
                         .HasColumnName("seat_row");
 
-                    b.Property<int?>("TypeId")
+                    b.Property<int>("TypeId")
                         .HasColumnType("int")
                         .HasColumnName("type_id");
 
                     b.HasKey("SeatId")
-                        .HasName("PK__Seat__906DED9CEBDBBA0F");
+                        .HasName("PK__Seat__906DED9C543E62FF");
 
                     b.HasIndex("RoomId");
 
@@ -396,7 +433,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("type_name");
 
                     b.HasKey("TypeId")
-                        .HasName("PK__SeatType__2C0005989292213C");
+                        .HasName("PK__SeatType__2C00059808C7A841");
 
                     b.ToTable("SeatType", (string)null);
 
@@ -443,7 +480,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("start_time");
 
                     b.HasKey("ShowtimeId")
-                        .HasName("PK__Showtime__A406B5188AE7C04E");
+                        .HasName("PK__Showtime__A406B518E1190A6E");
 
                     b.HasIndex("MovieId");
 
@@ -470,7 +507,7 @@ namespace DataAccess.Migrations
                         .HasColumnName("seat_id");
 
                     b.HasKey("TicketId")
-                        .HasName("PK__Ticket__D596F96B76D72D6B");
+                        .HasName("PK__Ticket__D596F96B98EA604E");
 
                     b.HasIndex("BookingId");
 
@@ -484,7 +521,7 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Showtime", "Showtime")
                         .WithMany("Bookings")
                         .HasForeignKey("ShowtimeId")
-                        .HasConstraintName("FK__Booking__showtim__4F7CD00D");
+                        .HasConstraintName("FK_Booking_Showtime");
 
                     b.Navigation("Showtime");
                 });
@@ -494,23 +531,35 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Director", "Director")
                         .WithMany("Movies")
                         .HasForeignKey("DirectorId")
-                        .HasConstraintName("FK__Movie__director___3E52440B");
-
-                    b.HasOne("Models.Genre", "Genre")
-                        .WithMany("Movies")
-                        .HasForeignKey("GenreId")
-                        .HasConstraintName("FK__Movie__genre_id__3D5E1FD2");
+                        .HasConstraintName("FK_Movie_Director");
 
                     b.HasOne("Models.MovieStatus", "Status")
                         .WithMany("Movies")
                         .HasForeignKey("StatusId")
-                        .HasConstraintName("FK__Movie__status_id__3F466844");
+                        .HasConstraintName("FK_Movie_Status");
 
                     b.Navigation("Director");
 
+                    b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("Models.MovieGenre", b =>
+                {
+                    b.HasOne("Models.Genre", "Genre")
+                        .WithMany("MovieGenres")
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Movie", "Movie")
+                        .WithMany("MovieGenres")
+                        .HasForeignKey("MovieId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Genre");
 
-                    b.Navigation("Status");
+                    b.Navigation("Movie");
                 });
 
             modelBuilder.Entity("Models.Seat", b =>
@@ -518,12 +567,16 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Room", "Room")
                         .WithMany("Seats")
                         .HasForeignKey("RoomId")
-                        .HasConstraintName("FK__Seat__room_id__49C3F6B7");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Seat_Room");
 
                     b.HasOne("Models.SeatType", "Type")
                         .WithMany("Seats")
                         .HasForeignKey("TypeId")
-                        .HasConstraintName("FK__Seat__type_id__4AB81AF0");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_Seat_SeatType");
 
                     b.Navigation("Room");
 
@@ -535,12 +588,12 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Movie", "Movie")
                         .WithMany("Showtimes")
                         .HasForeignKey("MovieId")
-                        .HasConstraintName("FK__Showtime__movie___440B1D61");
+                        .HasConstraintName("FK_Showtime_Movie");
 
                     b.HasOne("Models.Room", "Room")
                         .WithMany("Showtimes")
                         .HasForeignKey("RoomId")
-                        .HasConstraintName("FK__Showtime__room_i__44FF419A");
+                        .HasConstraintName("FK_Showtime_Room");
 
                     b.Navigation("Movie");
 
@@ -552,12 +605,12 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Booking", "Booking")
                         .WithMany("Tickets")
                         .HasForeignKey("BookingId")
-                        .HasConstraintName("FK__Ticket__booking___534D60F1");
+                        .HasConstraintName("FK_Ticket_Booking");
 
                     b.HasOne("Models.Seat", "Seat")
                         .WithMany("Tickets")
                         .HasForeignKey("SeatId")
-                        .HasConstraintName("FK__Ticket__seat_id__52593CB8");
+                        .HasConstraintName("FK_Ticket_Seat");
 
                     b.Navigation("Booking");
 
@@ -576,11 +629,13 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Models.Genre", b =>
                 {
-                    b.Navigation("Movies");
+                    b.Navigation("MovieGenres");
                 });
 
             modelBuilder.Entity("Models.Movie", b =>
                 {
+                    b.Navigation("MovieGenres");
+
                     b.Navigation("Showtimes");
                 });
 

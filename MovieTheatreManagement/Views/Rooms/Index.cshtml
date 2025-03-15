@@ -1,11 +1,11 @@
-﻿@model List<Genre>
+﻿@model List<Room>
 
 @{
-	ViewData["Title"] = "Genres";
+	ViewData["Title"] = "Rooms";
 }
 
 <div class="container mt-4">
-	<h1 class="text-center">Genre List</h1>
+	<h1 class="text-center">Room List</h1>
 
 	<div class="d-flex justify-content-between mb-3">
 		<a asp-action="upsert" class="btn btn-success">
@@ -17,7 +17,13 @@
 		<thead class="table-dark">
 			<tr>
 				<th class="text-center">
-					Genre Name
+					Room Name
+				</th>
+				<th class="text-center">
+					Total Rows
+				</th>
+				<th class="text-center">
+					Total Columns
 				</th>
 				<th class="text-center">Actions</th>
 			</tr>
@@ -27,14 +33,20 @@
 			{
 				<tr>
 					<td class="text-center">
-						@item.GenreName
+						@item.Name
+					</td>
+					<td class="text-center">
+						@item.TotalRows
+					</td>
+					<td class="text-center">
+						@item.TotalColumns
 					</td>
 					<td class="text-center">
 						<div class="btn-group">
-							<a asp-action="upsert" asp-controller="genres" asp-route-id="@item.GenreId" class="btn btn-warning">
+							<a asp-action="upsert" asp-controller="rooms" asp-route-id="@item.RoomId" class="btn btn-warning">
 								<i class="bi bi-pencil-square"></i> Edit
 							</a>
-							<a onclick="Delete('/genres/delete/@item.GenreId')" class="btn btn-danger" style="cursor: pointer">
+							<a onclick="Delete('/rooms/delete/@item.RoomId')" class="btn btn-danger" style="cursor: pointer">
 								<i class="bi bi-trash"></i> Delete
 							</a>
 						</div>
@@ -49,3 +61,4 @@
 {
 	<script src="~/js/deletedConfirmation.js"></script>
 }
+

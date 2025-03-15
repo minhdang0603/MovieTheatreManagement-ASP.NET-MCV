@@ -1,0 +1,131 @@
+﻿@model MovieVM
+
+@{
+	ViewData["Title"] = Model.Movie.MovieId == 0 ? "Create Movie" : "Edit Movie";
+}
+
+<div class="container mt-5">
+	<div class="card shadow-lg border-0">
+		<div class="card-header bg-info bg-gradient text-white text-center">
+			<h2 class="mb-0">
+				@(Model.Movie.MovieId == 0 ? "Create Movie" : "Edit Movie")
+			</h2>
+		</div>
+		<div class="card-body p-4">
+			<form asp-controller="movies" asp-action="upsert" method="post" enctype="multipart/form-data">
+				<input type="hidden" asp-for="Movie.MovieId" />
+				<input type="hidden" asp-for="Movie.ImageUrl" />
+				<!-- Title -->
+				<div class="mb-3 form-floating">
+					<input asp-for="Movie.Title" class="form-control border-0 shadow" placeholder="" />
+					<label asp-for="Movie.Title" class="form-label"></label>
+					<span asp-validation-for="Movie.Title" class="text-danger"></span>
+				</div>
+
+				<!-- Duration -->
+				<div class="mb-3 form-floating">
+					<input asp-for="Movie.Duration" class="form-control border-0 shadow" type="number" min="0" placeholder="" />
+					<label asp-for="Movie.Duration" class="form-label"></label>
+					<span asp-validation-for="Movie.Duration" class="text-danger"></span>
+				</div>
+
+				<!-- Description -->
+				<div class="mb-3 form-floating">
+					<textarea asp-for="Movie.Description" class="form-control border-0 shadow" rows="3" placeholder=""></textarea>
+					<label asp-for="Movie.Description" class="form-label"></label>
+					<span asp-validation-for="Movie.Description" class="text-danger"></span>
+				</div>
+
+				<!-- Release Date -->
+				<div class="mb-3 form-floating">
+					<input asp-for="Movie.ReleaseDate" class="form-control border-0 shadow" type="date" placeholder="" />
+					<label asp-for="Movie.ReleaseDate" class="form-label"></label>
+					<span asp-validation-for="Movie.ReleaseDate" class="text-danger"></span>
+				</div>
+
+				<!-- Director (Dropdown) -->
+				<div class="mb-3 form-floating">
+					<select asp-for="Movie.DirectorId" class="form-select border-0 shadow" asp-items="Model.DirectorList">
+						<option value="">-- Select Director --</option>
+					</select>
+					<label asp-for="Movie.DirectorId" class="form-label">Director</label>
+					<span asp-validation-for="Movie.DirectorId" class="text-danger"></span>
+				</div>
+
+				<!-- Status (Dropdown) -->
+				<div class="mb-3 form-floating">
+					<select asp-for="Movie.StatusId" class="form-select border-0 shadow" asp-items="Model.StatusList">
+						<option value="">-- Select Status --</option>
+					</select>
+					<label asp-for="Movie.StatusId" class="form-label">Status</label>
+					<span asp-validation-for="Movie.StatusId" class="text-danger"></span>
+				</div>
+
+				<!-- Genres (Checkboxes) -->
+				<div class="mb-3">
+					<label class="form-label">Genres</label>
+					<div>
+						@foreach (var genre in Model.GenreList)
+						{
+							<div class="form-check form-check-inline">
+								<input class="form-check-input" type="checkbox"
+									   name="selectedGenres"
+									   value="@genre.Value"
+								@(Model.Movie.MovieGenres != null &&
+															Model.Movie.MovieGenres.Any(mg => mg.GenreId.ToString() == genre.Value)
+															? "checked" : "") />
+								<label class="form-check-label">@genre.Text</label>
+							</div>
+						}
+					</div>
+				</div>
+
+				<!-- Image Upload & Preview -->
+				<div class="mb-3">
+					<div class="row">
+						<div class="col-md-8">
+							<div class="form-floating">
+								<input type="file" name="file" accept="image/*" id="imgInp" class="form-control border-0 shadow" />
+								<label asp-for="Movie.ImageUrl" class="form-label"></label>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<img src="@Model.Movie.ImageUrl"
+								 alt="Image Preview" style="border-radius: 5px; border: 1px solid #bbb9b9" width="100%" />
+						</div>
+					</div>
+				</div>
+
+				<!-- Submit & Cancel -->
+				<div class="d-flex gap-2">
+					<button type="submit" class="btn btn-info w-100">
+						@if (Model.Movie.MovieId == 0)
+						{
+							<i class="bi bi-plus-circle"></i> <span>Create</span>
+						}
+						else
+						{
+							<i class="bi bi-save"></i> <span>Update</span>
+						}
+					</button>
+					<a asp-controller="movies" asp-action="index" class="btn btn-outline-info w-100">
+						<i class="bi bi-arrow-left"></i> Back to List
+					</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+@section Scripts
+{
+	<script>
+		const imgInp = document.getElementById('imgInp');
+
+		imgInp.onchange = evt => {
+			const [file] = imgInp.files
+			if (file) {
+				document.querySelector('img').src = URL.createObjectURL(file)
+			}
+		}
+	</script>
+}

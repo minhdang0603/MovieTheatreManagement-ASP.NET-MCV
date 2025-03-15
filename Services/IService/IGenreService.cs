@@ -13,6 +13,6 @@ namespace Services.IService
 		List<Genre> GetGenreList();
 		void AddGenre(Genre genre);
 		void RemoveGenre(Genre genre);
-		bool UpdateGenre(Genre genre);
+		void UpdateGenre(Genre genre);
 	}
 }

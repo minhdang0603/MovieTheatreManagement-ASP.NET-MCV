@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250312033340_RebuildDb")]
+    partial class RebuildDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -335,13 +338,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("varchar(50)")
                         .HasColumnName("name");
 
-                    b.Property<int>("TotalColumns")
+                    b.Property<int>("SeatsNo")
                         .HasColumnType("int")
-                        .HasColumnName("total_column");
-
-                    b.Property<int>("TotalRows")
-                        .HasColumnType("int")
-                        .HasColumnName("total_row");
+                        .HasColumnName("seats_no");
 
                     b.HasKey("RoomId")
                         .HasName("PK__Room__19675A8A72E6B5AE");
@@ -353,22 +352,19 @@ namespace DataAccess.Migrations
                         {
                             RoomId = 1,
                             Name = "IMAX Theater",
-                            TotalColumns = 10,
-                            TotalRows = 5
+                            SeatsNo = 100
                         },
                         new
                         {
                             RoomId = 2,
                             Name = "Dolby Atmos",
-                            TotalColumns = 10,
-                            TotalRows = 8
+                            SeatsNo = 80
                         },
                         new
                         {
                             RoomId = 3,
                             Name = "Standard Hall",
-                            TotalColumns = 10,
-                            TotalRows = 12
+                            SeatsNo = 120
                         });
                 });
 
@@ -381,7 +377,7 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SeatId"));
 
-                    b.Property<int>("RoomId")
+                    b.Property<int?>("RoomId")
                         .HasColumnType("int")
                         .HasColumnName("room_id");
 
@@ -396,7 +392,7 @@ namespace DataAccess.Migrations
                         .HasColumnType("varchar(10)")
                         .HasColumnName("seat_row");
 
-                    b.Property<int>("TypeId")
+                    b.Property<int?>("TypeId")
                         .HasColumnType("int")
                         .HasColumnName("type_id");
 
@@ -564,15 +560,11 @@ namespace DataAccess.Migrations
                     b.HasOne("Models.Room", "Room")
                         .WithMany("Seats")
                         .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_Seat_Room");
 
                     b.HasOne("Models.SeatType", "Type")
                         .WithMany("Seats")
                         .HasForeignKey("TypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("FK_Seat_SeatType");
 
                     b.Navigation("Room");

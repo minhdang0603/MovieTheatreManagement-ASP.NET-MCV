@@ -1,0 +1,56 @@
+﻿@model List<Showtime>
+
+@{
+    ViewData["Title"] = "Showtimes";
+}
+
+<div class="container mt-4">
+    <h1 class="text-center text-primary">Showtime List</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a asp-action="upsert" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Create New
+        </a>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th class="text-center">Movie</th>
+                <th class="text-center">Room</th>
+                <th class="text-center">Start Time</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">
+                        @(item.Movie?.Title ?? "N/A")
+                    </td>
+                    <td class="text-center">
+                        @(item.Room?.Name ?? "N/A")
+                    </td>
+                    <td class="text-center">
+                        @item.StartTime.ToString("yyyy-MM-dd HH:mm")
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group">
+                            <a asp-action="Upsert" asp-route-id="@item.ShowtimeId" class="btn btn-warning">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                            <a onClick="Delete('/showtimes/delete/@item.ShowtimeId')" class="btn btn-danger">
+                                <i class="bi bi-trash"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script src="~/js/deletedConfirmation.js"></script>
+}

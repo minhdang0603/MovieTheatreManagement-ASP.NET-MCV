@@ -1,0 +1,112 @@
+﻿@model RoomVM
+
+@{
+	ViewData["Title"] = Model.Room.RoomId == 0 ? "Create Room" : "Edit Room";
+}
+
+<div class="container mt-5">
+	<div class="card shadow-lg border-0">
+		<div class="card-header bg-info bg-gradient text-white text-center">
+			<h2 class="mb-0">@(Model.Room.RoomId == 0 ? "Create Room" : "Edit Room")</h2>
+		</div>
+		<div class="card-body p-4">
+			<form asp-controller="rooms" asp-action="upsert" method="post">
+				<input type="hidden" asp-for="Room.RoomId" />
+				<div class="border p-4 rounded">
+					<div class="row g-3">
+						<div class="col-12 mb-3 form-floating">
+							<input asp-for="Room.Name" class="form-control border-0 shadow-sm" placeholder="Room Name" />
+							<label asp-for="Room.Name"></label>
+							<span asp-validation-for="Room.Name" class="text-danger"></span>
+						</div>
+						<div class="col-6 form-floating">
+							<input asp-for="Room.TotalRows" class="form-control border-0 shadow-sm" placeholder="Total Rows" />
+							<label asp-for="Room.TotalRows"></label>
+							<span asp-validation-for="Room.TotalRows" class="text-danger"></span>
+						</div>
+						<div class="col-6 form-floating">
+							<input asp-for="Room.TotalColumns" class="form-control border-0 shadow-sm" placeholder="Total Columns" />
+							<label asp-for="Room.TotalColumns"></label>
+							<span asp-validation-for="Room.TotalColumns" class="text-danger"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Phần chọn loại ghế cho từng hàng -->
+				<div class="border p-4 rounded mt-4">
+					<h4 class="mb-3">Choose Seat Type For Each Row</h4>
+					<div id="seatTypeContainer"></div>
+				</div>
+
+				<div class="row mt-3">
+					<div class="col-6">
+						<button type="submit" class="btn btn-info w-100">
+							@if (Model.Room.RoomId == 0)
+							{
+								<i class="bi bi-plus-circle"></i> <span>Create</span>
+							}
+							else
+							{
+								<i class="bi bi-save"></i> <span>Update</span>
+							}
+						</button>
+					</div>
+					<div class="col-6">
+						<a asp-controller="rooms" asp-action="Index" class="btn btn-outline-info w-100">
+							<i class="bi bi-arrow-left"></i> Back to List
+						</a>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		var seatTypeList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.SeatTypeList.Select(s => new { s.Value, s.Text })));
+		var seatTypePerRow = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.SeatTypePerRow));
+
+		function renderSeatTypeDropdowns() {
+			var totalRows = parseInt($('#Room_TotalRows').val());
+			var container = $('#seatTypeContainer');
+			container.empty();
+			if (!isNaN(totalRows) && totalRows > 0) {
+				for (var i = 0; i < totalRows; i++) {
+					// Lấy ký tự hàng (A, B, C, ...)
+					var rowLetter = String.fromCharCode('A'.charCodeAt(0) + i);
+					var rowDiv = $('<div class="row mb-3 align-items-center"></div>');
+					var labelDiv = $('<div class="col-2"><label>Row ' + rowLetter + '</label></div>');
+					// Tạo select với tên SeatTypePerRow[i]
+					var select = $('<select class="form-select" name="SeatTypePerRow[' + i + ']"></select>');
+
+					// Duyệt danh sách các loại ghế để thêm option
+					$.each(seatTypeList, function(index, item) {
+						var option = $('<option></option>').attr('value', item.Value).text(item.Text);
+						// Nếu có giá trị được chọn sẵn cho hàng này, set selected
+						if (seatTypePerRow && seatTypePerRow.length > i && seatTypePerRow[i] == item.Value) {
+							option.attr('selected', 'selected');
+						}
+						select.append(option);
+					});
+
+					var selectDiv = $('<div class="col-10"></div>').append(select);
+					rowDiv.append(labelDiv).append(selectDiv);
+					container.append(rowDiv);
+				}
+			}
+		}
+
+		$(document).ready(function () {
+			// Khi người dùng thay đổi giá trị TotalRows thì render lại dropdown
+			$('#Room_TotalRows').on('input', function () {
+				renderSeatTypeDropdowns();
+			});
+
+			// Render dropdown khi trang load (nếu có giá trị ban đầu)
+			renderSeatTypeDropdowns();
+		});
+	</script>
+}
+
+

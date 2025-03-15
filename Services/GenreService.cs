@@ -21,7 +21,6 @@ namespace Services
 		public void AddGenre(Genre genre)
 		{
 			_context.Genres.Add(genre);
-			_context.SaveChanges();
 		}
 
 		public Genre GetGenreById(int id)
@@ -37,18 +36,13 @@ namespace Services
 		public void RemoveGenre(Genre genre)
 		{
 			_context.Genres.Remove(genre);
-			_context.SaveChanges();
 		}
 
-		public bool UpdateGenre(Genre genre)
+		public void UpdateGenre(Genre genre)
 		{
 			var oldGenre = _context.Genres.FirstOrDefault(g => g.GenreId == genre.GenreId);
-			if(oldGenre == null)
-				return false;
 			oldGenre.GenreName = genre.GenreName;
 			_context.Genres.Update(oldGenre);
-			_context.SaveChanges();
-			return true;
 		}
 	}
 }

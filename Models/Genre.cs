@@ -12,5 +12,5 @@ public partial class Genre
 	[Required(ErrorMessage = "Genre Name is required")]
 	public string GenreName { get; set; } = null!;
 
-    public virtual ICollection<Movie> Movies { get; set; } = new List<Movie>();
+	public virtual ICollection<MovieGenre> MovieGenres { get; set; } = new List<MovieGenre>();
 }

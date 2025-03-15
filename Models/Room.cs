@@ -9,7 +9,8 @@ public partial class Room
 
     public string Name { get; set; } = null!;
 
-    public int SeatsNo { get; set; }
+    public int TotalColumns { get; set; }
+    public int TotalRows { get; set; }
 
     public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
 

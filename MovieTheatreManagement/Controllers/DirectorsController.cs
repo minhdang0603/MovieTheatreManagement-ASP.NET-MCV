@@ -8,67 +8,68 @@ using Microsoft.EntityFrameworkCore;
 using DataAccess.Data;
 using Models;
 using Services.IService;
-using Services;
-using System.IO;
+using Humanizer.Localisation;
 using Microsoft.Extensions.Hosting;
 
 namespace MovieTheatreManagement.Controllers
 {
-	public class GenresController : Controller
+	public class DirectorsController : Controller
 	{
 		private readonly IUnitOfWork _unitOfWork;
 
-		public GenresController(IUnitOfWork unitOfWork)
+		public DirectorsController(IUnitOfWork unitOfWork)
 		{
 			_unitOfWork = unitOfWork;
 		}
 
+		// GET: Directors
 		public IActionResult Index()
 		{
-			var genres = _unitOfWork.Genre.GetGenreList();
-			return View(genres);
+			var directors = _unitOfWork.Director.GetDirectorList();
+			return View(directors);
 		}
 
+		// GET: Directors/Edit/5
 		public IActionResult Upsert(int? id)
 		{
 			if (id is null or 0)
 			{
-				return View(new Genre());
+				return View(new Director());
 			}
 
-			var genre = _unitOfWork.Genre.GetGenreById(id.Value);
-			if (genre == null)
+			var director = _unitOfWork.Director.GetDirectorById(id.Value);
+			if (director == null)
 			{
 				return NotFound();
 			}
-			return View(genre);
+			return View(director);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Upsert(int id, [Bind("GenreId,GenreName")] Genre genre)
+		public IActionResult Upsert(int id, [Bind("DirectorId,DirectorName")] Director director)
 		{
-			if (id != genre.GenreId)
+			if (id != director.DirectorId)
 			{
 				return NotFound();
 			}
 
 			if (!ModelState.IsValid)
 			{
-				return View(genre);
+				return View(director);
 			}
 
 			try
 			{
 				if (id == 0)
 				{
-					_unitOfWork.Genre.AddGenre(genre);
-					TempData["success"] = "Genre added successfully";
+					_unitOfWork.Director.AddDirector(director);
+					TempData["success"] = "Director added successfully";
 				}
 				else
 				{
-					_unitOfWork.Genre.UpdateGenre(genre);
-					TempData["success"] = "Genre updated successfully";
+					_unitOfWork.Director.UpdateDirector(director);
+					TempData["success"] = "Director updated successfully";
 				}
 				_unitOfWork.Save();
 			}
@@ -87,14 +88,14 @@ namespace MovieTheatreManagement.Controllers
 				return NotFound();
 			}
 
-			var genre = _unitOfWork.Genre.GetGenreById(id.Value);
+			var director = _unitOfWork.Director.GetDirectorById(id.Value);
 
-			if (genre is null)
+			if (director is null)
 			{
 				return NotFound();
 			}
 
-			_unitOfWork.Genre.RemoveGenre(genre);
+			_unitOfWork.Director.RemoveDirector(director);
 			_unitOfWork.Save();
 			TempData["success"] = "Delete successful";
 			return Json(new { });

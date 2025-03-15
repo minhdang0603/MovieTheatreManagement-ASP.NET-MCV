@@ -1,0 +1,81 @@
+﻿@model ShowtimeVM
+
+@{
+	ViewData["Title"] = Model.Showtime.ShowtimeId == 0 ? "Create Showtime" : "Edit Showtime";
+}
+
+<div class="container mt-5">
+	<div class="card shadow-lg border-0">
+		<div class="card-header bg-info bg-gradient text-white text-center">
+			<h2 class="mb-0">@(Model.Showtime.ShowtimeId == 0 ? "Create" : "Edit") Showtime</h2>
+		</div>
+		<div class="card-body p-4">
+			<form asp-controller="showtimes" asp-action="upsert" method="post">
+				<input hidden asp-for="Showtime.ShowtimeId" />
+				<div class="border p-4 rounded">
+					<div class="row g-3">
+						<div class="col-12 form-floating mb-3">
+							<select asp-for="Showtime.MovieId" class="form-select border-0 shadow-sm" asp-items="Model.MovieList">
+								<option disabled selected>--Select Movie--</option>
+							</select>
+							<label asp-for="Showtime.MovieId" class="form-label">Movie</label>
+							<span asp-validation-for="Showtime.MovieId" class="text-danger"></span>
+						</div>
+
+						<div class="col-12 form-floating mb-3">
+							<select asp-for="Showtime.RoomId" class="form-select border-0 shadow-sm" asp-items="Model.RoomList">
+								<option disabled selected>--Select Room--</option>
+							</select>
+							<label asp-for="Showtime.RoomId" class="form-label">Room</label>
+							<span asp-validation-for="Showtime.RoomId" class="text-danger"></span>
+						</div>
+
+						<div class="col-12 form-floating mb-3">
+							<input asp-for="Showtime.StartTime" class="form-control border-0 shadow-sm" />
+							<label asp-for="Showtime.StartTime" class="form-label">Start Time</label>
+							<span asp-validation-for="Showtime.StartTime" class="text-danger"></span>
+						</div>
+
+						<div class="col-12 d-flex gap-2">
+							<button type="submit" class="btn btn-info w-100">
+								@if (Model.Showtime.ShowtimeId == 0)
+								{
+									<i class="bi bi-plus-circle"></i> <span>Create</span>
+								}
+								else
+								{
+									<i class="bi bi-save"></i> <span>Update</span>
+								}
+							</button>
+							<a asp-controller="showtimes" asp-action="index" class="btn btn-outline-info w-100">
+								<i class="bi bi-arrow-left"></i> Back to List
+							</a>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		// Set default date and time if creating a new showtime
+		$(document).ready(function() {
+				console.log("check");
+			if (@Model.Showtime.ShowtimeId == 0) {
+				// Set default time to current date/time rounded to nearest half hour
+				let now = new Date();
+				now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30);
+				let year = now.getFullYear();
+				let month = String(now.getMonth() + 1).padStart(2, '0');
+				let day = String(now.getDate()).padStart(2, '0');
+				let hours = String(now.getHours()).padStart(2, '0');
+				let minutes = String(now.getMinutes()).padStart(2, '0');
+
+				let defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+				$('#Showtime_StartTime').val(defaultDateTime);
+			}
+		});
+	</script>
+}

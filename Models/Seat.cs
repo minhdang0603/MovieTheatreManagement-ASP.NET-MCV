@@ -7,9 +7,9 @@ public partial class Seat
 {
     public int SeatId { get; set; }
 
-    public int? RoomId { get; set; }
+    public int RoomId { get; set; }
 
-    public int? TypeId { get; set; }
+    public int TypeId { get; set; }
 
     public string SeatRow { get; set; } = null!;
 

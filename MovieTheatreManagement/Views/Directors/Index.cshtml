@@ -1,11 +1,11 @@
-﻿@model List<Genre>
+﻿@model List<Director>
 
 @{
-	ViewData["Title"] = "Genres";
+	ViewData["Title"] = "Index";
 }
 
 <div class="container mt-4">
-	<h1 class="text-center">Genre List</h1>
+	<h1 class="text-center">Director List</h1>
 
 	<div class="d-flex justify-content-between mb-3">
 		<a asp-action="upsert" class="btn btn-success">
@@ -17,7 +17,7 @@
 		<thead class="table-dark">
 			<tr>
 				<th class="text-center">
-					Genre Name
+					Director Name
 				</th>
 				<th class="text-center">Actions</th>
 			</tr>
@@ -27,14 +27,14 @@
 			{
 				<tr>
 					<td class="text-center">
-						@item.GenreName
+						@item.DirectorName
 					</td>
 					<td class="text-center">
 						<div class="btn-group">
-							<a asp-action="upsert" asp-controller="genres" asp-route-id="@item.GenreId" class="btn btn-warning">
+							<a asp-action="upsert" asp-controller="directors" asp-route-id="@item.DirectorId" class="btn btn-warning">
 								<i class="bi bi-pencil-square"></i> Edit
 							</a>
-							<a onclick="Delete('/genres/delete/@item.GenreId')" class="btn btn-danger" style="cursor: pointer">
+							<a onclick="Delete('/directors/delete/@item.DirectorId')" class="btn btn-danger" style="cursor: pointer">
 								<i class="bi bi-trash"></i> Delete
 							</a>
 						</div>

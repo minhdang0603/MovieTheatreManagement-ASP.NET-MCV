@@ -24,11 +24,13 @@
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
     <ProjectReference Include="..\Models\Models.csproj" />
     <ProjectReference Include="..\Services\Services.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Area\Admin\" />
     <Folder Include="Area\Customer\" />
+    <Folder Include="wwwroot\images\movies\" />
   </ItemGroup>
 
 </Project>
