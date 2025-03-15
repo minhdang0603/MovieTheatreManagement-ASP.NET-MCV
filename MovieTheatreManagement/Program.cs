@@ -13,12 +13,9 @@ namespace MovieTheatreManagement
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+			builder.Services.AddServerSideBlazor();
+			var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
-            builder.Services.AddScoped<IGenreService, GenreService>();
-			builder.Services.AddScoped<IDirectorService, DirectorService>();
-            builder.Services.AddScoped<IMovieService, MovieService>();
             builder.Services.AddScoped<IUnitOfWork,  UnitOfWork>();
 
 			var app = builder.Build();
@@ -37,10 +34,10 @@ namespace MovieTheatreManagement
             app.UseRouting();
 
             app.UseAuthorization();
-
-            app.MapControllerRoute(
+			app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
+			app.MapBlazorHub();
 
             app.Run();
         }

@@ -12,6 +12,9 @@
 </head>
 <body>
 	<header>
+		<base href="~/" />
+		<component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)"
+				   render-mode="ServerPrerendered" />
 		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
 			<div class="container-fluid">
 				<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MovieTheatre</a>
@@ -76,6 +79,7 @@
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="_framework/blazor.server.js"></script>
 	@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
