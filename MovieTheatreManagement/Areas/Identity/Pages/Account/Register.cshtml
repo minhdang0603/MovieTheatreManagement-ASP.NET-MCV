@@ -26,13 +26,16 @@
 						<span asp-validation-for="Input.Name" class="text-danger"></span>
 					</div>
 					<div class="form-floating mb-3 col-md-6">
-						<input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="Date of birth" />
+						<input asp-for="Input.PhoneNumber" class="form-control" aria-required="true" placeholder="Phone Number" />
 						<label asp-for="Input.PhoneNumber" class="ms-2 text-muted">Phone Number</label>
 						<span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
 					</div>
 					<div class="form-floating mb-3 col-md-12">
-						<input asp-for="Input.DateOfBirth" class="form-control" type="date" aria-required="true" placeholder="Date of birth" />
-						<label asp-for="Input.DateOfBirth" class="ms-2 text-muted"></label>
+						<input asp-for="Input.DateOfBirth" class="form-control" type="date" aria-required="true"
+							   value=""
+							   max="@DateTime.Now.ToString("yyyy-MM-dd")"
+							   placeholder="Date of birth" />
+						<label asp-for="Input.DateOfBirth" class="ms-2 text-muted">Date of Birth</label>
 						<span asp-validation-for="Input.DateOfBirth" class="text-danger"></span>
 					</div>
 					<div class="form-floating mb-3 col-md-6">
@@ -53,7 +56,6 @@
 					<div class="col-12">
 						<button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
 					</div>
-
 				</form>
 			</div>
 		</div>
