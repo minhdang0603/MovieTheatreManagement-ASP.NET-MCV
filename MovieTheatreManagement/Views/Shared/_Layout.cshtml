@@ -23,42 +23,46 @@
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-					<ul class="navbar-nav flex-grow-1">
+					<ul class="navbar-nav me-auto">
 						<li class="nav-item">
-							<a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+							<a class="nav-link text-dark" asp-area="customer" asp-controller="Home" asp-action="Index">Home</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+							<a class="nav-link text-dark" asp-area="customer" asp-controller="Home" asp-action="Privacy">Privacy</a>
 						</li>
-						<li class="nav-item dropdown">
-							<a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown"
-							   aria-expanded="false">
-								Theatre management
-							</a>
-							<ul class="dropdown-menu">
-								<li class="nav-item">
-									<a class="dropdown-item" asp-controller="genres"
-									   asp-action="index">Genre</a>
-								</li>
-								<li class="nav-item">
-									<a class="dropdown-item" asp-controller="directors"
-									   asp-action="index">Director</a>
-								</li>
-								<li class="nav-item">
-									<a class="dropdown-item" asp-controller="movies"
-									   asp-action="index">Movie</a>
-								</li>
-								<li class="nav-item">
-									<a class="dropdown-item" asp-controller="showtimes"
-									   asp-action="index">Session</a>
-								</li>
-								<li class="nav-item">
-									<a class="dropdown-item" asp-controller="rooms"
-									   asp-action="index">Room</a>
-								</li>
-							</ul>
-						</li>
+						@if (User.IsInRole(SD.Role_Admin) || User.IsInRole(SD.Role_Employee))
+						{
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown"
+								   aria-expanded="false">
+									Theatre management
+								</a>
+								<ul class="dropdown-menu">
+									<li class="nav-item">
+										<a class="dropdown-item" asp-area="admin" asp-controller="genres"
+										   asp-action="index">Genre</a>
+									</li>
+									<li class="nav-item">
+										<a class="dropdown-item" asp-area="admin" asp-controller="directors"
+										   asp-action="index">Director</a>
+									</li>
+									<li class="nav-item">
+										<a class="dropdown-item" asp-area="admin" asp-controller="movies"
+										   asp-action="index">Movie</a>
+									</li>
+									<li class="nav-item">
+										<a class="dropdown-item" asp-area="admin" asp-controller="showtimes"
+										   asp-action="index">Session</a>
+									</li>
+									<li class="nav-item">
+										<a class="dropdown-item" asp-area="admin" asp-controller="rooms"
+										   asp-action="index">Room</a>
+									</li>
+								</ul>
+							</li>
+						}
 					</ul>
+					<partial name="_LoginPartial" />
 				</div>
 			</div>
 		</nav>

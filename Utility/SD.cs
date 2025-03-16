@@ -11,5 +11,8 @@ namespace Utility
 		public const string SeatType_Standard = "Standard";
 		public const string SeatType_VIP = "VIP";
 		public const string SeatType_Premium = "Premium";
+		public const string Role_Customer = "Customer";
+		public const string Role_Employee = "Employee";
+		public const string Role_Admin = "Admin";
 	}
 }

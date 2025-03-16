@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Models;
 
 namespace DataAccess.Data;
-public partial class ApplicationDbContext : DbContext
+public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 {
 	public ApplicationDbContext()
 	{
@@ -14,6 +16,8 @@ public partial class ApplicationDbContext : DbContext
 		: base(options)
 	{
 	}
+
+	public virtual DbSet<ApplicationUser> ApplicationUsers { get; set; }
 
 	public virtual DbSet<Booking> Bookings { get; set; }
 
@@ -39,6 +43,7 @@ public partial class ApplicationDbContext : DbContext
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
+		base.OnModelCreating(modelBuilder);
 		modelBuilder.Entity<Booking>(entity =>
 		{
 			entity.HasKey(e => e.BookingId).HasName("PK__Booking__5DE3A5B19905FE69");

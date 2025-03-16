@@ -1,0 +1,51 @@
+﻿@model List<Genre>
+
+@{
+	ViewData["Title"] = "Genres";
+}
+
+<div class="container mt-4">
+	<h1 class="text-center">Genre List</h1>
+
+	<div class="d-flex justify-content-between mb-3">
+		<a asp-action="upsert" class="btn btn-success">
+			<i class="bi bi-plus-circle"></i> Create New
+		</a>
+	</div>
+
+	<table class="table table-striped table-hover">
+		<thead class="table-dark">
+			<tr>
+				<th class="text-center">
+					Genre Name
+				</th>
+				<th class="text-center">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model)
+			{
+				<tr>
+					<td class="text-center">
+						@item.GenreName
+					</td>
+					<td class="text-center">
+						<div class="btn-group">
+							<a asp-action="upsert" asp-controller="genres" asp-route-id="@item.GenreId" class="btn btn-warning">
+								<i class="bi bi-pencil-square"></i> Edit
+							</a>
+							<a onclick="Delete('/admin/genres/delete/@item.GenreId')" class="btn btn-danger" style="cursor: pointer">
+								<i class="bi bi-trash"></i> Delete
+							</a>
+						</div>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+</div>
+
+@section Scripts
+{
+	<script src="~/js/deletedConfirmation.js"></script>
+}
