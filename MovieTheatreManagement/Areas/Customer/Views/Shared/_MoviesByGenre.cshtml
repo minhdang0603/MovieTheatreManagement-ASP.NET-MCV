@@ -1,0 +1,189 @@
+﻿@model List<Movie>
+
+<!-- Movies by Genre -->
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="section-title">Movies by Genre</h2>
+            </div>
+        </div>
+
+        <!-- Genre Tabs -->
+        <ul class="nav nav-tabs genre-tabs" id="genreTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-dark" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-pane" type="button" role="tab" aria-controls="all-pane" aria-selected="true">All</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark" id="action-tab" data-bs-toggle="tab" data-bs-target="#action-pane" type="button" role="tab" aria-controls="action-pane" aria-selected="false">Action</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark" id="comedy-tab" data-bs-toggle="tab" data-bs-target="#comedy-pane" type="button" role="tab" aria-controls="comedy-pane" aria-selected="false">Comedy</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark" id="drama-tab" data-bs-toggle="tab" data-bs-target="#drama-pane" type="button" role="tab" aria-controls="drama-pane" aria-selected="false">Drama</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark" id="horror-tab" data-bs-toggle="tab" data-bs-target="#horror-pane" type="button" role="tab" aria-controls="horror-pane" aria-selected="false">Horror</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-dark" id="scifi-tab" data-bs-toggle="tab" data-bs-target="#scifi-pane" type="button" role="tab" aria-controls="scifi-pane" aria-selected="false">Sci-Fi</button>
+            </li>
+        </ul>
+
+        <!-- Genre Tab Content -->
+        <div class="tab-content" id="genreTabsContent">
+            <!-- All Movies -->
+            <div class="tab-pane fade show active" id="all-pane" role="tabpanel" aria-labelledby="all-tab" tabindex="0">
+                <div class="row gap-section">
+                    @foreach (var movie in Model.Take(8))
+                    {
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <partial name="_MovieCard" model="movie" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Action Movies -->
+            <div class="tab-pane fade" id="action-pane" role="tabpanel" aria-labelledby="action-tab" tabindex="0">
+                <div class="row gap-section">
+                    @{
+                        var actionMovies = Model.Where(m => m.MovieGenres != null &&
+                        m.MovieGenres.Any(mg =>
+                        mg.Genre != null &&
+                        mg.Genre.GenreName.Equals("Action", StringComparison.OrdinalIgnoreCase))).ToList();
+
+                        if (actionMovies.Any())
+                        {
+                            foreach (var movie in actionMovies)
+                            {
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <partial name="_MovieCard" model="movie" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 empty-state">
+                                <p class="empty-state-text">No action movies available.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Comedy Movies -->
+            <div class="tab-pane fade" id="comedy-pane" role="tabpanel" aria-labelledby="comedy-tab" tabindex="0">
+                <div class="row gap-section">
+                    @{
+                        var comedyMovies = Model.Where(m => m.MovieGenres != null &&
+                        m.MovieGenres.Any(mg =>
+                        mg.Genre != null &&
+                        mg.Genre.GenreName.Equals("Comedy", StringComparison.OrdinalIgnoreCase))).ToList();
+
+                        if (comedyMovies.Any())
+                        {
+                            foreach (var movie in comedyMovies)
+                            {
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <partial name="_MovieCard" model="movie" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 empty-state">
+                                <p class="empty-state-text">No comedy movies available.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Drama Movies -->
+            <div class="tab-pane fade" id="drama-pane" role="tabpanel" aria-labelledby="drama-tab" tabindex="0">
+                <div class="row gap-section">
+                    @{
+                        var dramaMovies = Model.Where(m => m.MovieGenres != null &&
+                        m.MovieGenres.Any(mg =>
+                        mg.Genre != null &&
+                        mg.Genre.GenreName.Equals("Drama", StringComparison.OrdinalIgnoreCase))).ToList();
+
+                        if (dramaMovies.Any())
+                        {
+                            foreach (var movie in dramaMovies)
+                            {
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <partial name="_MovieCard" model="movie" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 empty-state">
+                                <p class="empty-state-text">No drama movies available.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Horror Movies -->
+            <div class="tab-pane fade" id="horror-pane" role="tabpanel" aria-labelledby="horror-tab" tabindex="0">
+                <div class="row gap-section">
+                    @{
+                        var horrorMovies = Model.Where(m => m.MovieGenres != null &&
+                        m.MovieGenres.Any(mg =>
+                        mg.Genre != null &&
+                        mg.Genre.GenreName.Equals("Horror", StringComparison.OrdinalIgnoreCase))).ToList();
+
+                        if (horrorMovies.Any())
+                        {
+                            foreach (var movie in horrorMovies)
+                            {
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <partial name="_MovieCard" model="movie" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 empty-state">
+                                <p class="empty-state-text">No horror movies available.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Sci-Fi Movies -->
+            <div class="tab-pane fade" id="scifi-pane" role="tabpanel" aria-labelledby="scifi-tab" tabindex="0">
+                <div class="row gap-section">
+                    @{
+                        var scifiMovies = Model.Where(m => m.MovieGenres != null &&
+                        m.MovieGenres.Any(mg =>
+                        mg.Genre != null &&
+                        mg.Genre.GenreName.Equals("Science Fiction", StringComparison.OrdinalIgnoreCase))).ToList();
+
+                        if (scifiMovies.Any())
+                        {
+                            foreach (var movie in scifiMovies)
+                            {
+                                <div class="col-lg-3 col-md-4 col-sm-6">
+                                    <partial name="_MovieCard" model="movie" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12 empty-state">
+                                <p class="empty-state-text">No science fiction movies available.</p>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

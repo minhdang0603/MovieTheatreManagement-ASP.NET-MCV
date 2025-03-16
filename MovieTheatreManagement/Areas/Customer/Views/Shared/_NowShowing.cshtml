@@ -1,0 +1,56 @@
+﻿@model List<Movie>
+
+<!-- Now Showing Section -->
+<section id="now-showing" class="section-container">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="section-title">Now Showing</h2>
+            </div>
+        </div>
+
+        <div class="row gap-section">
+            @foreach (var movie in Model)
+            {
+                <div class="col-lg-3 col-md-6">
+                    <div class="card movie-card">
+                        <div class="position-relative">
+                            <img src="@(string.IsNullOrEmpty(movie.ImageUrl) ? "/api/placeholder/400/600" : movie.ImageUrl)"
+                                 class="card-img-top movie-card-image"
+                                 alt="@movie.Title" />
+                            <div class="movie-overlay">
+                                <div class="w-100">
+                                    <div class="movie-badge-container">
+                                        <span class="badge bg-primary">@movie.Duration min</span>
+                                        @if (movie.MovieGenres != null && movie.MovieGenres.Any())
+                                        {
+                                            <span class="badge bg-secondary">@movie.MovieGenres.First().Genre.GenreName</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold text-truncate">@movie.Title</h5>
+                            <p class="card-text text-muted small mb-0">
+                                Director: @(movie.Director != null ? movie.Director.DirectorName : "N/A")
+                            </p>
+                            <p class="card-text small mb-3">
+                                <span class="text-muted">Genres: </span>
+                                <span>
+                                    @(movie.MovieGenres != null && movie.MovieGenres.Any()
+                                        ? string.Join(", ", movie.MovieGenres.Select(g => g.Genre.GenreName))
+                                        : "N/A")
+                                </span>
+                            </p>
+                            <div class="d-grid gap-2">
+                                <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-outline-primary btn-sm">View Details</a>
+                                <a href="#" class="btn btn-primary btn-sm">Book Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

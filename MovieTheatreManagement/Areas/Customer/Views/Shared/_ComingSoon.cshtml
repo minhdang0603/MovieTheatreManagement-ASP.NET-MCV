@@ -1,0 +1,60 @@
+﻿@model List<Movie>
+
+<!-- Coming Soon Section -->
+<section id="coming-soon" class="section-bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="section-title">Coming Soon</h2>
+            </div>
+        </div>
+
+        <div class="row gap-section">
+            @if (Model.Any())
+            {
+                foreach (var movie in Model)
+                {
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card movie-card">
+                            <div class="position-relative">
+                                <img src="@(string.IsNullOrEmpty(movie.ImageUrl) ? "/api/placeholder/400/600" : movie.ImageUrl)"
+                                     class="card-img-top movie-card-image"
+                                     alt="@movie.Title" />
+                                <div class="movie-overlay">
+                                    <div class="w-100">
+                                        <div class="movie-badge-container">
+                                            <span class="badge bg-primary">@movie.Duration min</span>
+                                            @if (movie.MovieGenres != null && movie.MovieGenres.Any())
+                                            {
+                                                <span class="badge bg-secondary">@movie.MovieGenres.First().Genre.GenreName</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate">@movie.Title</h5>
+                                <p class="card-text text-muted small mb-0">
+                                    Director: @(movie.Director != null ? movie.Director.DirectorName : "N/A")
+                                </p>
+                                <p class="card-text small mb-2">
+                                    <span class="text-muted">Release Date: </span>
+                                    <span>@(movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.ToString("MMM dd, yyyy") : "TBA")</span>
+                                </p>
+                                <div class="d-grid">
+                                    <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-outline-primary btn-sm">View Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 empty-state">
+                    <p class="empty-state-text">Stay tuned for upcoming releases!</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>

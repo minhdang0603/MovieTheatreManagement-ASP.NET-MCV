@@ -23,6 +23,20 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 			return View(movies);
 		}
 
+		public IActionResult Details(int? id)
+		{
+			if (id == null)
+			{
+				return NotFound();
+			}
+			var movie = _unitOfWork.Movie.GetMovieWithAllRelationById(id.Value);
+			if (movie == null)
+			{
+				return NotFound();
+			}
+			return View(movie);
+		}
+
 		public IActionResult Privacy()
 		{
 			return View();
