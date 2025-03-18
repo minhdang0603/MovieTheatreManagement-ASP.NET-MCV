@@ -58,14 +58,14 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.nav-categories .nav-link {
-    transition: all 0.3s ease;
-}
+    .nav-categories .nav-link {
+        transition: all 0.3s ease;
+    }
 
-.nav-categories .nav-link.active {
-    color: white !important;
-    font-weight: 500;
-}
+        .nav-categories .nav-link.active {
+            color: white !important;
+            font-weight: 500;
+        }
 
 /* Section Styling */
 .section-title {
@@ -122,9 +122,9 @@ body {
     margin-bottom: 1.5rem;
 }
 
-.genre-tabs .nav-link.active {
-    font-weight: 500;
-}
+    .genre-tabs .nav-link.active {
+        font-weight: 500;
+    }
 
 /* Spacing */
 .gap-section {
@@ -139,4 +139,86 @@ body {
 
 .empty-state-text {
     color: var(--bs-secondary-color);
+}
+
+.movie-details-card img {
+    max-height: 500px;
+    object-fit: cover;
+}
+
+.showtime-btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.movie-meta .badge {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* Movie Details Page Styles */
+.movie-details-card {
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+}
+
+    .movie-details-card img {
+        max-height: 600px;
+        object-fit: cover;
+    }
+
+.movie-meta {
+    margin-bottom: 15px;
+}
+
+    .movie-meta .badge {
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+
+/* Showtime Buttons */
+.showtime-btn {
+    border-radius: 30px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+    .showtime-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+/* Date Tabs */
+.nav-tabs .nav-link {
+    color: #495057;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+    .nav-tabs .nav-link:hover {
+        border-color: #e9ecef #e9ecef #dee2e6;
+        background-color: #f8f9fa;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: #fff;
+        border-color: #dee2e6 #dee2e6 #fff;
+        font-weight: 600;
+    }
+
+/* Room Accordions */
+.accordion-button:not(.collapsed) {
+    background-color: rgba(13, 110, 253, 0.1);
+    color: #0d6efd;
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }

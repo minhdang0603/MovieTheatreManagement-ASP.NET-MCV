@@ -75,5 +75,13 @@ namespace Services
 			}
 			return room;
 		}
+
+		public List<Seat> GetSeatsByIds(List<int> selectedSeatIds)
+		{
+			return _context.Seats
+				.Include(s => s.Type)
+				.Where(s => selectedSeatIds.Contains(s.SeatId))
+				.ToList();
+		}
 	}
 }

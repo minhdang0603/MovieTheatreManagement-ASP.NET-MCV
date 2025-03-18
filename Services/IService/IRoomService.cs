@@ -14,5 +14,6 @@ namespace Services.IService
 		Room GetRoomById(int id);
 		List<Room> GetRoomList();
 		void UpdateRoom(Room room, List<int> seatTypePerRow);
+		List<Seat> GetSeatsByIds(List<int> selectedSeatIds);
 	}
 }

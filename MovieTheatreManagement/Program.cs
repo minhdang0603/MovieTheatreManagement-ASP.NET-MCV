@@ -30,7 +30,15 @@ namespace MovieTheatreManagement
 				options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 			});
 
-            builder.Services.AddScoped<IUnitOfWork,  UnitOfWork>();
+            builder.Services.AddDistributedMemoryCache();
+			builder.Services.AddSession(options =>
+			{
+				options.IdleTimeout = TimeSpan.FromMinutes(100);
+				options.Cookie.HttpOnly = true;
+				options.Cookie.IsEssential = true;
+			});
+
+			builder.Services.AddScoped<IUnitOfWork,  UnitOfWork>();
             builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 			var app = builder.Build();
@@ -49,11 +57,11 @@ namespace MovieTheatreManagement
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.MapRazorPages();
+			app.UseSession();
+			app.MapRazorPages();
 			app.MapControllerRoute(
                 name: "default",
                 pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
-			app.MapBlazorHub();
 
             app.Run();
         }

@@ -18,8 +18,8 @@ namespace Services
 		public IMovieStatusService MovieStatus { get; private set; }
 		public IRoomService Room { get; private set; }
 		public ISeatTypeService SeatType { get; private set; }
-
 		public IShowtimeService Showtime { get; private set; }
+		public IBookingService Booking { get; private set; }
 
 		public UnitOfWork(ApplicationDbContext context)
 		{
@@ -31,6 +31,7 @@ namespace Services
 			Room = new RoomService(_context);
 			SeatType = new SeatTypeService(_context);
 			Showtime = new ShowtimeService(_context);
+			Booking = new BookingService(_context);
 		}
 
 		public void Save()

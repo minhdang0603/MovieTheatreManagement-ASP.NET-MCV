@@ -1,0 +1,155 @@
+﻿@model MovieDetailsVM
+
+@{
+	ViewData["Title"] = Model.Movie.Title;
+}
+
+<div class="container my-5">
+	<div class="row">
+		<!-- Movie Information -->
+		<div class="col-md-4">
+			<div class="card movie-details-card shadow">
+				<img src="@(string.IsNullOrEmpty(Model.Movie.ImageUrl) ? "/api/placeholder/400/600" : Model.Movie.ImageUrl)"
+					 class="card-img-top movie-details-card-image"
+					 alt="@Model.Movie.Title" />
+				<div class="card-body">
+					<h1 class="card-title fs-2 fw-bold">@Model.Movie.Title</h1>
+					<div class="movie-meta mb-3">
+						<div class="badge bg-primary mb-1">@Model.Movie.Duration min</div>
+						@if (Model.Movie.ReleaseDate.HasValue)
+						{
+							<div class="badge bg-secondary mb-1">Released: @Model.Movie.ReleaseDate.Value.ToString("MMM dd, yyyy")</div>
+						}
+						@if (Model.Movie.Director != null)
+						{
+							<div>
+								<span class="text-muted">Director:</span> @Model.Movie.Director.DirectorName
+							</div>
+						}
+						@if (Model.Movie.MovieGenres != null && Model.Movie.MovieGenres.Any())
+						{
+							<div>
+								<span class="text-muted">Genres:</span>
+								@string.Join(", ", Model.Movie.MovieGenres.Select(mg => mg.Genre.GenreName))
+							</div>
+						}
+					</div>
+
+					<h5 class="card-subtitle mb-2">Description</h5>
+					<p class="card-text">@Model.Movie.Description</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Showtimes Information -->
+		<div class="col-md-8">
+			<div class="card shadow">
+				<div class="card-header bg-primary text-white">
+					<h2 class="fs-4 mb-0">Showtimes</h2>
+				</div>
+				<div class="card-body">
+					@if (!Model.Showtimes.Any())
+					{
+						<div class="alert alert-info">
+							No upcoming showtimes available for this movie.
+						</div>
+					}
+					else
+					{
+						<!-- Date tabs -->
+						<ul class="nav nav-tabs mb-4" id="showtimeDateTabs" role="tablist">
+							@foreach (var dateGroup in Model.ShowtimesByDate)
+							{
+								var date = dateGroup.Key;
+								var isFirst = date == Model.ShowtimesByDate.First().Key;
+								var dateId = date.ToString("yyyyMMdd");
+
+								<li class="nav-item" role="presentation">
+									<button class="nav-link @(isFirst ? "active" : "")"
+											id="date-@dateId-tab"
+											data-bs-toggle="tab"
+											data-bs-target="#date-@dateId"
+											type="button"
+											role="tab"
+											aria-controls="date-@dateId"
+											aria-selected="@(isFirst ? "true" : "false")">
+										@date.ToString("ddd, MMM d")
+									</button>
+								</li>
+							}
+						</ul>
+
+						<!-- Tab content -->
+						<div class="tab-content" id="showtimeDateTabsContent">
+							@foreach (var dateGroup in Model.ShowtimesByDate)
+							{
+								var date = dateGroup.Key;
+								var isFirst = date == Model.ShowtimesByDate.First().Key;
+								var dateId = date.ToString("yyyyMMdd");
+
+								<div class="tab-pane fade @(isFirst ? "show active" : "")"
+									 id="date-@dateId"
+									 role="tabpanel"
+									 aria-labelledby="date-@dateId-tab">
+
+									<!-- Room Cards -->
+									<div class="accordion" id="roomAccordion-@dateId">
+										@foreach (var roomGroup in Model.GetShowtimesByRoom(date))
+										{
+											var room = roomGroup.First().Room;
+											var roomId = room?.RoomId ?? 0;
+											var accordionId = $"room-{dateId}-{roomId}";
+
+											<div class="accordion-item mb-3 border shadow-sm">
+												<h2 class="accordion-header" id="heading-@accordionId">
+													<button class="accordion-button"
+															type="button"
+															data-bs-toggle="collapse"
+															data-bs-target="#collapse-@accordionId"
+															aria-expanded="true"
+															aria-controls="collapse-@accordionId">
+														<strong>@(room?.Name ?? "Unknown Room")</strong>
+													</button>
+												</h2>
+												<div id="collapse-@accordionId"
+													 class="accordion-collapse collapse show"
+													 aria-labelledby="heading-@accordionId">
+													<div class="accordion-body">
+														<div class="row">
+															@foreach (var showtime in roomGroup.OrderBy(s => s.StartTime))
+															{
+																<div class="col-md-4 col-6 mb-3">
+																	<a class="btn btn-outline-primary w-100 showtime-btn"
+																	   asp-area="Customer"
+																	   asp-controller="Booking"
+																	   asp-action="Index"
+																	   asp-route-id="@showtime.ShowtimeId"
+																	>
+																		@showtime.StartTime.ToString("h:mm tt")
+																	</a>
+																</div>
+															}
+														</div>
+													</div>
+												</div>
+											</div>
+										}
+									</div>
+								</div>
+							}
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		$(document).ready(function() {
+			// Show first tab by default
+			$('#showtimeDateTabs li:first-child button').tab('show');
+		});
+	</script>
+}

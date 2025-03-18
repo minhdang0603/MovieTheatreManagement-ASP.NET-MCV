@@ -3,19 +3,14 @@
     ViewData["Title"] = "Home";
 }
 
-<!-- Header Banner -->
 <partial name="_HeaderBanner" />
 
-<!-- Movie Categories Navigation -->
 <partial name="_NavigationCategories" />
 
-<!-- Now Showing Section -->
 <partial name="_NowShowing" model="Model.Where(m => m.StatusId == 1).Take(4).ToList()" />
 
-<!-- Coming Soon Section -->
 <partial name="_ComingSoon" model="Model.Where(m => m.StatusId == 2).Take(4).ToList()" />
 
-<!-- Movies by Genre -->
 <partial name="_MoviesByGenre" model="Model" />
 
 @section Scripts {

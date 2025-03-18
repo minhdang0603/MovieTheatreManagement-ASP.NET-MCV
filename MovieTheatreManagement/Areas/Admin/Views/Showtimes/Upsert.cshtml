@@ -10,7 +10,7 @@
 			<h2 class="mb-0">@(Model.Showtime.ShowtimeId == 0 ? "Create" : "Edit") Showtime</h2>
 		</div>
 		<div class="card-body p-4">
-			<form asp-controller="showtimes" asp-action="upsert" method="post">
+			<form asp-controller="showtimes" asp-action="upsert" method="post" id="showtimeForm">
 				<input hidden asp-for="Showtime.ShowtimeId" />
 				<div class="border p-4 rounded">
 					<div class="row g-3">
@@ -23,21 +23,34 @@
 						</div>
 
 						<div class="col-12 form-floating mb-3">
-							<select asp-for="Showtime.RoomId" class="form-select border-0 shadow-sm" asp-items="Model.RoomList">
-								<option disabled selected>--Select Room--</option>
-							</select>
-							<label asp-for="Showtime.RoomId" class="form-label">Room</label>
-							<span asp-validation-for="Showtime.RoomId" class="text-danger"></span>
-						</div>
-
-						<div class="col-12 form-floating mb-3">
-							<input asp-for="Showtime.StartTime" class="form-control border-0 shadow-sm" />
+							<input asp-for="Showtime.StartTime" class="form-control border-0 shadow-sm"/>
 							<label asp-for="Showtime.StartTime" class="form-label">Start Time</label>
 							<span asp-validation-for="Showtime.StartTime" class="text-danger"></span>
 						</div>
 
+						<div class="col-12 form-floating mb-3">
+							<select asp-for="Showtime.RoomId" class="form-select border-0 shadow-sm">
+								<option disabled selected>--Select Room--</option>
+								@foreach (var room in Model.RoomList)
+								{
+									<option value="@room.Value">@room.Text</option>
+								}
+							</select>
+							<label asp-for="Showtime.RoomId" class="form-label">Room</label>
+							<span asp-validation-for="Showtime.RoomId" class="text-danger"></span>
+							<div id="roomLoadingIndicator" class="d-none mt-2">
+								<div class="spinner-border spinner-border-sm text-primary" role="status">
+									<span class="visually-hidden">Loading...</span>
+								</div>
+								<span class="ms-2">Loading available rooms...</span>
+							</div>
+							<div id="noRoomsAvailable" class="text-danger mt-2 d-none">
+								No rooms available for this time slot. Please select a different time.
+							</div>
+						</div>
+
 						<div class="col-12 d-flex gap-2">
-							<button type="submit" class="btn btn-info w-100">
+							<button type="submit" class="btn btn-info w-100" id="submitButton">
 								@if (Model.Showtime.ShowtimeId == 0)
 								{
 									<i class="bi bi-plus-circle"></i> <span>Create</span>
@@ -60,22 +73,186 @@
 
 @section Scripts {
 	<script>
-		// Set default date and time if creating a new showtime
+		// Store the original room options for reference
+		const originalRoomOptions = [];
 		$(document).ready(function() {
-				console.log("check");
-			if (@Model.Showtime.ShowtimeId == 0) {
-				// Set default time to current date/time rounded to nearest half hour
-				let now = new Date();
-				now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30);
-				let year = now.getFullYear();
-				let month = String(now.getMonth() + 1).padStart(2, '0');
-				let day = String(now.getDate()).padStart(2, '0');
-				let hours = String(now.getHours()).padStart(2, '0');
-				let minutes = String(now.getMinutes()).padStart(2, '0');
+			// Store original room options
+			$("#Showtime_RoomId option").each(function() {
+				originalRoomOptions.push({
+					value: $(this).val(),
+					text: $(this).text()
+				});
+			});
 
-				let defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-				$('#Showtime_StartTime').val(defaultDateTime);
+			// Set minimum date/time for startTime input to now
+			setMinimumDateTime();
+
+			// Set default time if creating a new showtime
+			if (@Model.Showtime.ShowtimeId == 0) {
+				setDefaultDateTime();
 			}
+
+			// Add event listeners
+			$("#Showtime_StartTime").on("change", updateAvailableRooms);
+			$("#Showtime_MovieId").on("change", updateAvailableRooms);
+
+			// Run once on page load if editing
+			if (@Model.Showtime.ShowtimeId != 0) {
+				// Wait a moment to ensure all values are loaded
+				setTimeout(updateAvailableRooms, 500);
+			}
+		});
+
+		function setMinimumDateTime() {
+			const now = new Date();
+			// Format to YYYY-MM-DDThh:mm
+			const year = now.getFullYear();
+			const month = String(now.getMonth() + 1).padStart(2, '0');
+			const day = String(now.getDate()).padStart(2, '0');
+			const hours = String(now.getHours()).padStart(2, '0');
+			const minutes = String(now.getMinutes()).padStart(2, '0');
+
+			const formattedDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+			$("#Showtime_StartTime").attr("min", formattedDateTime);
+		}
+
+		function setDefaultDateTime() {
+			// Set default time to current date/time rounded to nearest half hour
+			let now = new Date();
+			now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30);
+			let year = now.getFullYear();
+			let month = String(now.getMonth() + 1).padStart(2, '0');
+			let day = String(now.getDate()).padStart(2, '0');
+			let hours = String(now.getHours()).padStart(2, '0');
+			let minutes = String(now.getMinutes()).padStart(2, '0');
+
+			let defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+			$('#Showtime_StartTime').val(defaultDateTime);
+		}
+
+		function updateAvailableRooms() {
+			const startTime = $("#Showtime_StartTime").val();
+			const movieId = $("#Showtime_MovieId").val();
+			const showtimeId = @Model.Showtime.ShowtimeId;
+
+			// Validate inputs before proceeding
+			if (!startTime || !movieId || movieId === "--Select Movie--") {
+				return;
+			}
+
+			// Show loading indicator
+			$("#roomLoadingIndicator").removeClass("d-none");
+			$("#noRoomsAvailable").addClass("d-none");
+
+			// Disable room select while loading
+			$("#Showtime_RoomId").prop("disabled", true);
+
+			// Get the current selected room ID (if any) to restore selection after update
+			const currentRoomId = $("#Showtime_RoomId").val();
+
+			// Call API to get available rooms
+			$.ajax({
+				url: '/admin/showtimes/AvailableRoom',
+				type: 'GET',
+				data: {
+					startTime: startTime,
+					movieId: movieId,
+					showtimeId: showtimeId
+				},
+				success: function(response) {
+					if (response.success) {
+						// Clear existing options
+						$("#Showtime_RoomId").empty();
+
+						// Add default option
+						$("#Showtime_RoomId").append('<option disabled selected>--Select Room--</option>');
+
+						// Check if we have available rooms
+						if (response.data && response.data.length > 0) {
+							// Add available rooms
+							response.data.forEach(function(room) {
+								$("#Showtime_RoomId").append(`<option value="${room.roomId}">${room.name}</option>`);
+							});
+
+							// Try to restore the previously selected room if available
+							if (currentRoomId && $("#Showtime_RoomId option[value='" + currentRoomId + "']").length > 0) {
+								$("#Showtime_RoomId").val(currentRoomId);
+							}
+						} else {
+							// Show no rooms available message
+							$("#noRoomsAvailable").removeClass("d-none");
+						}
+					} else {
+						console.error("Error fetching available rooms:", response.message);
+						alert("Error fetching available rooms. Please try again.");
+						// Restore original options in case of error
+						restoreOriginalRoomOptions();
+					}
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX error:", error);
+					alert("Error fetching available rooms. Please try again.");
+					// Restore original options in case of error
+					restoreOriginalRoomOptions();
+				},
+				complete: function() {
+					// Hide loading indicator and enable select
+					$("#roomLoadingIndicator").addClass("d-none");
+					$("#Showtime_RoomId").prop("disabled", false);
+				}
+			});
+		}
+
+		function restoreOriginalRoomOptions() {
+			// Clear existing options
+			$("#Showtime_RoomId").empty();
+
+			// Add default option
+			$("#Showtime_RoomId").append('<option disabled selected>--Select Room--</option>');
+
+			// Add all original options
+			originalRoomOptions.forEach(function(option) {
+				if (option.value && option.value !== "undefined") {
+					$("#Showtime_RoomId").append(`<option value="${option.value}">${option.text}</option>`);
+				}
+			});
+		}
+
+		// Form validation before submit
+		$("#showtimeForm").on("submit", function(e) {
+			const startTime = $("#Showtime_StartTime").val();
+			const movieId = $("#Showtime_MovieId").val();
+			const roomId = $("#Showtime_RoomId").val();
+
+			if (!startTime) {
+				alert("Please select a start time.");
+				e.preventDefault();
+				return false;
+			}
+
+			if (!movieId || movieId === "--Select Movie--") {
+				alert("Please select a movie.");
+				e.preventDefault();
+				return false;
+			}
+
+			if (!roomId || roomId === "--Select Room--") {
+				alert("Please select an available room.");
+				e.preventDefault();
+				return false;
+			}
+
+			// Check if selected time is in the past
+			const selectedTime = new Date(startTime);
+			const now = new Date();
+
+			if (selectedTime < now) {
+				alert("You cannot schedule a showtime in the past. Please select a future time.");
+				e.preventDefault();
+				return false;
+			}
+
+			return true;
 		});
 	</script>
 }

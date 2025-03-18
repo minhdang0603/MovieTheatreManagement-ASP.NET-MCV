@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Models.ViewModels;
 using MovieTheatreManagement.Models;
 using Services.IService;
 
@@ -34,7 +35,16 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 			{
 				return NotFound();
 			}
-			return View(movie);
+
+			var showtimes = _unitOfWork.Showtime.GetShowtimeListByMovieId(id.Value);
+
+			var viewModel = new MovieDetailsVM
+			{
+				Movie = movie,
+				Showtimes = showtimes
+			};
+
+			return View(viewModel);
 		}
 
 		public IActionResult Privacy()

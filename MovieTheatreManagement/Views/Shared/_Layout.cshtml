@@ -12,9 +12,6 @@
 </head>
 <body>
 	<header>
-		<base href="~/" />
-		<component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)"
-				   render-mode="ServerPrerendered" />
 		<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
 			<div class="container-fluid">
 				<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MovieTheatre</a>
@@ -59,6 +56,14 @@
 										   asp-action="index">Room</a>
 									</li>
 								</ul>
+							</li>
+						}
+						@if (User.Identity.IsAuthenticated)
+						{
+							<li class="nav-item">
+								<a class="nav-link text-dark" asp-area="customer" asp-controller="Booking" asp-action="MyBookings">
+									<i class="bi bi-ticket-perforated"></i> My Bookings
+								</a>
 							</li>
 						}
 					</ul>

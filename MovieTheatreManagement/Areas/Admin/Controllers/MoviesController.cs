@@ -144,6 +144,7 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
+		#region API CALLS
 		[HttpDelete]
 		public IActionResult Delete(int? id)
 		{
@@ -174,5 +175,6 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 			TempData["success"] = "Delete successful";
 			return Json(new { });
 		}
+		#endregion
 	}
 }

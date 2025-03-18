@@ -1,0 +1,132 @@
+﻿@model List<Booking>
+
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="mb-0">My Bookings</h1>
+            <p class="text-muted">View and manage your movie bookings</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-film"></i> Browse Movies
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <i class="bi bi-ticket-perforated" style="font-size: 4rem; color: #ccc;"></i>
+                </div>
+                <h3>No bookings found</h3>
+                <p class="text-muted">You haven't made any bookings yet.</p>
+                <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">
+                    Browse Movies
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="booking-filter mb-4">
+            <ul class="nav nav-tabs" id="bookingFilterTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming-bookings" type="button" role="tab" aria-controls="upcoming-bookings" aria-selected="true">
+                        Upcoming
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past-bookings" type="button" role="tab" aria-controls="past-bookings" aria-selected="false">
+                        Past
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-bookings" type="button" role="tab" aria-controls="all-bookings" aria-selected="false">
+                        All
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="bookingFilterTabsContent">
+            <!-- Upcoming Bookings Tab -->
+            <div class="tab-pane fade show active" id="upcoming-bookings" role="tabpanel" aria-labelledby="upcoming-tab">
+                @{
+                    var upcomingBookings = Model.Where(b => b.Showtime?.StartTime > DateTime.Now).ToList();
+                    if (upcomingBookings.Any())
+                    {
+                        <div class="row">
+                            @foreach (var booking in upcomingBookings.OrderBy(b => b.Showtime?.StartTime))
+                            {
+                                <div class="col-md-6 mb-4">
+                                    <partial name="_BookingCard" model="booking" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <p>You don't have any upcoming bookings.</p>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- Past Bookings Tab -->
+            <div class="tab-pane fade" id="past-bookings" role="tabpanel" aria-labelledby="past-tab">
+                @{
+                    var pastBookings = Model.Where(b => b.Showtime?.StartTime <= DateTime.Now).ToList();
+                    if (pastBookings.Any())
+                    {
+                        <div class="row">
+                            @foreach (var booking in pastBookings.OrderByDescending(b => b.Showtime?.StartTime))
+                            {
+                                <div class="col-md-6 mb-4">
+                                    <partial name="_BookingCard" model="booking" />
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info text-center">
+                            <p>You don't have any past bookings.</p>
+                        </div>
+                    }
+                }
+            </div>
+
+            <!-- All Bookings Tab -->
+            <div class="tab-pane fade" id="all-bookings" role="tabpanel" aria-labelledby="all-tab">
+                <div class="row">
+                    @foreach (var booking in Model.OrderByDescending(b => b.Showtime?.StartTime))
+                    {
+                        <div class="col-md-6 mb-4">
+                            <partial name="_BookingCard" model="booking" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/cancelledConfirmation.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Show first tab by default
+            $('#bookingFilterTabs button[data-bs-toggle="tab"]').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+        });
+    </script>
+}

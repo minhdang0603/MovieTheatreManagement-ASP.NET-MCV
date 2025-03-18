@@ -1,0 +1,134 @@
+﻿@model BookingConfirmationVM
+
+@{
+    ViewData["Title"] = "Confirm Booking";
+}
+
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-area="Customer" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@Model.Movie.MovieId">@Model.Movie.Title</a></li>
+                    <li class="breadcrumb-item"><a asp-area="Customer" asp-controller="Booking" asp-action="Index" asp-route-id="@Model.Showtime.ShowtimeId">Select Seats</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Confirm Booking</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Confirm Your Booking</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <img src="@(string.IsNullOrEmpty(Model.Movie.ImageUrl) ? "/api/placeholder/150/225" : Model.Movie.ImageUrl)"
+                                 alt="@Model.Movie.Title"
+                                 class="img-fluid rounded"
+                                 style="max-height: 200px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-8">
+                            <h4 class="mb-2">@Model.Movie.Title</h4>
+                            <p class="text-muted">@Model.Movie.Duration minutes</p>
+
+                            <hr>
+
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Date:</div>
+                                <div class="col-7 fw-bold">@Model.Showtime.StartTime.ToString("dddd, MMMM d, yyyy")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Time:</div>
+                                <div class="col-7 fw-bold">@Model.Showtime.StartTime.ToString("h:mm tt")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Room:</div>
+                                <div class="col-7 fw-bold">@Model.Showtime.Room?.Name</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Ticket Details</h5>
+
+                            <div class="row mb-2">
+                                <div class="col-6 text-muted">Selected Seats:</div>
+                                <div class="col-6 fw-bold">@Model.FormattedSelectedSeats</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6 text-muted">Number of Tickets:</div>
+                                <div class="col-6 fw-bold">@Model.SelectedSeats.Count</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ticket-price-breakdown mb-4">
+                        <h5 class="mb-3">Price Breakdown</h5>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Seat</th>
+                                    <th>Type</th>
+                                    <th class="text-end">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var seat in Model.SelectedSeats)
+                                {
+                                    <tr>
+                                        <td>@seat.SeatRow@seat.SeatColumn</td>
+                                        <td>@(seat.Type?.TypeName ?? "Standard")</td>
+                                        <td class="text-end">@(seat.Type?.Price?.ToString("C") ?? 10.ToString("C"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="2">Total</th>
+                                    <th class="text-end">@Model.TotalPrice.ToString("C")</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-3">Payment Method</h5>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="payAtVenue" checked>
+                                <label class="form-check-label" for="payAtVenue">
+                                    Pay at the venue
+                                </label>
+                            </div>
+                            <div class="form-check disabled">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" disabled>
+                                <label class="form-check-label" for="creditCard">
+                                    Credit Card (Coming Soon)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <form asp-action="ConfirmBooking" method="post">
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" asp-route-id="@Model.Showtime.ShowtimeId" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Seat Selection
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Confirm Booking
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

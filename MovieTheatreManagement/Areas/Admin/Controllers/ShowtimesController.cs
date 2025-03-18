@@ -67,6 +67,11 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 				return NotFound();
 			}
 
+			if (showtimeVM.Showtime.StartTime < DateTime.Now)
+			{
+				ModelState.AddModelError("Showtime.StartTime", "You cannot schedule a showtime in the past.");
+			}
+
 			if (!ModelState.IsValid)
 			{
 				showtimeVM.MovieList = _unitOfWork.Movie.GetMovieList().Select(m => new SelectListItem()
@@ -103,6 +108,7 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
+		#region API CALLS
 		[HttpDelete]
 		public IActionResult Delete(int? id)
 		{
@@ -120,5 +126,26 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 			TempData["success"] = "Delete successful";
 			return Json(new { });
 		}
+
+		[HttpGet()]
+		public IActionResult AvailableRoom(DateTime startTime, int movieId, int? showtimeId = null)
+		{
+			try
+			{
+				// Use the service to get available rooms
+				var availableRooms = _unitOfWork.Showtime.GetAvailableRooms(startTime, movieId, showtimeId);
+
+				return Ok(new
+				{
+					success = true,
+					data = availableRooms.Select(r => new { r.RoomId, r.Name })
+				});
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(new { success = false, message = ex.Message });
+			}
+		}
+		#endregion
 	}
 }

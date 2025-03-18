@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250317135111_ModifiedShowtimeTable")]
+    partial class ModifiedShowtimeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,10 +241,6 @@ namespace DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BookingId"));
 
-                    b.Property<string>("ApplicationUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<int?>("ShowtimeId")
                         .HasColumnType("int")
                         .HasColumnName("showtime_id");
@@ -260,8 +259,6 @@ namespace DataAccess.Migrations
 
                     b.HasKey("BookingId")
                         .HasName("PK__Booking__5DE3A5B19905FE69");
-
-                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("ShowtimeId");
 
@@ -793,18 +790,10 @@ namespace DataAccess.Migrations
 
             modelBuilder.Entity("Models.Booking", b =>
                 {
-                    b.HasOne("Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Models.Showtime", "Showtime")
                         .WithMany("Bookings")
                         .HasForeignKey("ShowtimeId")
                         .HasConstraintName("FK_Booking_Showtime");
-
-                    b.Navigation("ApplicationUser");
 
                     b.Navigation("Showtime");
                 });
