@@ -84,8 +84,6 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 			entity.HasOne(d => d.Showtime).WithMany(p => p.Bookings)
 				.HasForeignKey(d => d.ShowtimeId)
 				.HasConstraintName("FK_Booking_Showtime");
-
-
 		});
 
 		modelBuilder.Entity<Director>(entity =>

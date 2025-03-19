@@ -1,70 +1,28 @@
 ﻿@model Booking
 
 @{
-    ViewData["Title"] = "Booking Details";
-
-    bool isSuccessful = Model.Status != SD.Status_Cancelled &&
-                        Model.Status != SD.Status_PaymentFailed &&
-                        (Model.Payment?.PaymentStatus != SD.Payment_Rejected);
-
-    string headerClass = isSuccessful ? "bg-success" : "bg-danger";
-    string headerIcon = isSuccessful ? "bi-check-circle-fill" : "bi-exclamation-circle-fill";
-    string headerText = isSuccessful ? "Booking Confirmed!" : "Booking Unsuccessful";
+    ViewData["Title"] = "Booking Confirmed";
 }
 
 <div class="container my-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow border-@(isSuccessful ? "success" : "danger")">
-                <div class="card-header @headerClass text-white">
-                    <h2 class="mb-0"><i class="@headerIcon me-2"></i> @headerText</h2>
+            <div class="card shadow border-success">
+                <div class="card-header bg-success text-white">
+                    <h2 class="mb-0"><i class="bi bi-check-circle-fill me-2"></i> Booking Confirmed!</h2>
                 </div>
                 <div class="card-body p-4">
-                    @if (isSuccessful)
-                    {
-                        <div class="text-center mb-4">
-                            <div class="success-checkmark mb-3">
-                                <div class="check-icon">
-                                    <span class="icon-line line-tip"></span>
-                                    <span class="icon-line line-long"></span>
-                                </div>
+                    <div class="text-center mb-4">
+                        <div class="success-checkmark mb-3">
+                            <div class="check-icon">
+                                <span class="icon-line line-tip"></span>
+                                <span class="icon-line line-long"></span>
                             </div>
-                            <h3>Thank you for your booking!</h3>
-                            <p>Your booking has been successfully processed.</p>
-                            <p class="text-muted">Booking Reference: <strong>#@Model.BookingId.ToString("D6")</strong></p>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center mb-4">
-                            <div class="error-circle mb-3">
-                                <i class="bi bi-x-lg text-danger" style="font-size: 3rem;"></i>
-                            </div>
-
-                            @if (Model.Status == SD.Status_Cancelled)
-                            {
-                                <h3>This booking has been cancelled</h3>
-                                <p>Your booking was cancelled and no payment has been processed.</p>
-                            }
-                            else if (Model.Status == SD.Status_PaymentFailed)
-                            {
-                                <h3>Payment was unsuccessful</h3>
-                                <p>We encountered an issue processing your payment.</p>
-                            }
-                            else if (Model.Payment?.PaymentStatus == SD.Payment_Rejected)
-                            {
-                                <h3>Payment was declined</h3>
-                                <p>Your payment was declined by the payment provider.</p>
-                            }
-                            else
-                            {
-                                <h3>Booking could not be completed</h3>
-                                <p>There was an issue with your booking. Please try again.</p>
-                            }
-
-                            <p class="text-muted">Booking Reference: <strong>#@Model.BookingId.ToString("D6")</strong></p>
-                        </div>
-                    }
+                        <h3>Thank you for your booking!</h3>
+                        <p>Your booking has been successfully processed.</p>
+                        <p class="text-muted">Booking Reference: <strong>#@Model.BookingId.ToString("D6")</strong></p>
+                    </div>
 
                     <div class="booking-details mb-4">
                         <h4 class="border-bottom pb-2 mb-3">Booking Details</h4>
@@ -112,30 +70,26 @@
                                 <div class="row mb-2">
                                     <div class="col-sm-4 text-muted">Seats:</div>
                                     <div class="col-sm-8">
-                                        @string.Join(", ", Model.Tickets.Select(t => $"{t.Seat?.SeatRow}{t.Seat?.SeatColumn + 1}"))
+                                        @string.Join(", ", Model.Tickets.Select(t => $"{t.Seat?.SeatRow}{t.Seat?.SeatColumn}"))
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-sm-4 text-muted">Total Price:</div>
-                                    <div class="col-sm-8 fw-bold">@(Model.TotalPrice?.ToString("c"))</div>
+                                    <div class="col-sm-8 fw-bold">$@(Model.TotalPrice?.ToString("0.00") ?? "0.00")</div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-sm-4 text-muted">Payment Method:</div>
                                     <div class="col-sm-8">
-                                        @(Model.Payment?.PaymentMethod == SD.PaymentMethod_Cash ? "Pay at venue" : "Credit Card")
+                                        @(Model.Payment?.PaymentMethod == SD.PaymentMethod_CreditCard ? "Credit Card" : "Pay at venue")
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-sm-4 text-muted">Payment Status:</div>
                                     <div class="col-sm-8">
-                                        @if (Model.Payment?.PaymentStatus == SD.Payment_Pending)
-                                        {
-                                            <span class="badge bg-warning">Pending</span>
-                                        }
-                                        else if (Model.Payment?.PaymentStatus == SD.Payment_Approved)
+                                        @if (Model.Payment?.PaymentStatus == SD.Payment_Approved)
                                         {
                                             <span class="badge bg-success">Paid</span>
                                         }
@@ -145,62 +99,17 @@
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">Unknown</span>
-                                        }
-                                    </div>
-                                </div>
-
-                                <div class="row mb-2">
-                                    <div class="col-sm-4 text-muted">Booking Status:</div>
-                                    <div class="col-sm-8">
-                                        @if (Model.Status == SD.Status_Reserve)
-                                        {
-                                            <span class="badge bg-success">Confirmed</span>
-                                        }
-                                        else if (Model.Status == SD.Status_Cancelled)
-                                        {
-                                            <span class="badge bg-danger">Cancelled</span>
-                                        }
-                                        else if (Model.Status == SD.Status_PaymentFailed)
-                                        {
-                                            <span class="badge bg-danger">Payment Failed</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-secondary">@Model.Status</span>
+                                            <span class="badge bg-warning">Pending</span>
                                         }
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        @if (isSuccessful)
-                        {
-                            <div class="alert alert-info">
-                                <h5><i class="bi bi-info-circle-fill me-2"></i>Important Information</h5>
-                                <p class="mb-0">Please arrive at least 15 minutes before the showtime. Present your booking ID at the counter to collect your tickets.</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning">
-                                <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>What Next?</h5>
-                                @if (Model.Status == SD.Status_PaymentFailed || Model.Payment?.PaymentStatus == SD.Payment_Rejected)
-                                {
-                                    <p>You can try booking again with a different payment method.</p>
-                                    <div class="mt-3">
-                                        <a asp-area="Customer" asp-controller="Home" asp-action="Details"
-                                           asp-route-id="@Model.Showtime?.MovieId" class="btn btn-primary">
-                                            <i class="bi bi-arrow-repeat"></i> Try Booking Again
-                                        </a>
-                                    </div>
-                                }
-                                else
-                                {
-                                    <p class="mb-0">You can browse other movies and showtimes to make a new booking.</p>
-                                }
-                            </div>
-                        }
+                        <div class="alert alert-info">
+                            <h5><i class="bi bi-info-circle-fill me-2"></i>Important Information</h5>
+                            <p class="mb-0">Please arrive at least 15 minutes before the showtime. Present your booking ID at the counter to collect your tickets.</p>
+                        </div>
                     </div>
 
                     <div class="text-center mt-4">

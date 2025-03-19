@@ -1,174 +1,92 @@
 ﻿@model Booking
 
 @{
-    bool isPaymentFailed = Model.Status == SD.Status_PaymentFailed ||
-                          (Model.Payment != null && Model.Payment.PaymentStatus == SD.Payment_Rejected);
-    bool isCancelled = Model.Status == SD.Status_Cancelled;
-    bool isUpcoming = Model.Showtime?.StartTime > DateTime.Now;
-    bool isCompleted = Model.Showtime?.StartTime <= DateTime.Now && !isPaymentFailed && !isCancelled;
-
-    string cardBorderClass = isPaymentFailed ? "border-danger" :
-                             isCancelled ? "border-warning" :
-                             isUpcoming ? "border-primary" : "";
-
-    string statusClass = isPaymentFailed ? "danger" :
-                         isCancelled ? "warning" :
-                         isUpcoming ? "success" :
-                         "secondary";
-
-    string statusText = isPaymentFailed ? "Payment Failed" :
-                        isCancelled ? "Cancelled" :
-                        isUpcoming ? "Confirmed" :
-                        "Completed";
-
-    string statusIcon = isPaymentFailed ? "bi-exclamation-circle" :
-                        isCancelled ? "bi-x-circle" :
-                        isUpcoming ? "bi-check-circle" :
-                        "bi-clock-history";
+	bool isUpcoming = Model.Showtime?.StartTime > DateTime.Now;
+	string statusClass = Model.Status?.ToLower() == SD.Status_Cancelled ? "danger" : (isUpcoming ? "success" : "secondary");
+	string statusText = Model.Status?.ToLower() == SD.Status_Cancelled ? "Cancelled" : (isUpcoming ? "Confirmed" : "Completed");
 }
 
-<div class="card booking-card shadow h-100 @cardBorderClass">
-    <div class="card-header d-flex justify-content-between align-items-center bg-light @(isPaymentFailed || isCancelled ? "border-" + statusClass : "")">
-        <div>
-            <h6 class="mb-0">Booking #@Model.BookingId.ToString("D6")</h6>
-        </div>
-        <div>
-            <span class="badge bg-@statusClass">
-                <i class="@statusIcon me-1"></i> @statusText
-            </span>
-        </div>
-    </div>
+<div class="card booking-card shadow h-100">
+	<div class="card-header d-flex justify-content-between align-items-center bg-light">
+		<div>
+			<h6 class="mb-0">Booking #@Model.BookingId.ToString("D6")</h6>
+		</div>
+		<div>
+			<span class="badge bg-@statusClass">@statusText</span>
+		</div>
+	</div>
+	<div class="card-body">
+		@if (Model.Showtime?.Movie != null)
+		{
+			<div class="row g-0 mb-3">
+				<div class="col-md-4">
+					<img src="@(string.IsNullOrEmpty(Model.Showtime.Movie.ImageUrl) ? "/api/placeholder/100/150" : Model.Showtime.Movie.ImageUrl)"
+						 alt="@Model.Showtime.Movie.Title"
+						 class="img-fluid rounded"
+						 style="max-height: 120px; object-fit: cover;">
+				</div>
+				<div class="col-md-8 ps-md-3">
+					<h5 class="card-title mb-1">@Model.Showtime.Movie.Title</h5>
+					<div class="text-muted small mb-2">@Model.Showtime.Movie.Duration mins</div>
 
-    <div class="card-body">
-        @if (Model.Showtime?.Movie != null)
-        {
-            <div class="row g-0 mb-3">
-                <div class="col-md-4">
-                    <img src="@(string.IsNullOrEmpty(Model.Showtime.Movie.ImageUrl) ? "/api/placeholder/100/150" : Model.Showtime.Movie.ImageUrl)"
-                         alt="@Model.Showtime.Movie.Title"
-                         class="img-fluid rounded"
-                         style="max-height: 120px; object-fit: cover;">
-                </div>
-                <div class="col-md-8 ps-md-3">
-                    <h5 class="card-title mb-1">@Model.Showtime.Movie.Title</h5>
-                    <div class="text-muted small mb-2">@Model.Showtime.Movie.Duration mins</div>
+					<div class="d-flex align-items-center mb-1">
+						<i class="bi bi-calendar text-primary me-2"></i>
+						<span>@Model.Showtime.StartTime.ToString("ddd, MMM d, yyyy")</span>
+					</div>
+					<div class="d-flex align-items-center mb-1">
+						<i class="bi bi-clock text-primary me-2"></i>
+						<span>@Model.Showtime.StartTime.ToString("h:mm tt")</span>
+					</div>
+					<div class="d-flex align-items-center">
+						<i class="bi bi-door-open text-primary me-2"></i>
+						<span>@(Model.Showtime.Room?.Name ?? "Unknown")</span>
+					</div>
+				</div>
+			</div>
 
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-calendar text-primary me-2"></i>
-                        <span>@Model.Showtime.StartTime.ToString("ddd, MMM d, yyyy")</span>
-                    </div>
-                    <div class="d-flex align-items-center mb-1">
-                        <i class="bi bi-clock text-primary me-2"></i>
-                        <span>@Model.Showtime.StartTime.ToString("h:mm tt")</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-door-open text-primary me-2"></i>
-                        <span>@(Model.Showtime.Room?.Name ?? "Unknown")</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="booking-details">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Tickets:</span>
-                    <span>@Model.Tickets.Count</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted">Seats:</span>
-                    <span>@string.Join(", ", Model.Tickets.Select(t => $"{t.Seat?.SeatRow}{t.Seat?.SeatColumn + 1}"))</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                    <span class="text-muted">Total:</span>
-                    <span class="fw-bold">$@(Model.TotalPrice?.ToString("0.00") ?? "0.00")</span>
-                </div>
-
-                @if (Model.Payment != null)
-                {
-                    <div class="d-flex justify-content-between mt-2">
-                        <span class="text-muted">Payment:</span>
-                        <span>
-                            @if (Model.Payment.PaymentStatus == SD.Payment_Pending)
-                            {
-                                <span class="badge bg-warning">Pending</span>
-                            }
-                            else if (Model.Payment.PaymentStatus == SD.Payment_Approved)
-                            {
-                                <span class="badge bg-success">Paid</span>
-                            }
-                            else if (Model.Payment.PaymentStatus == SD.Payment_Rejected)
-                            {
-                                <span class="badge bg-danger">Failed</span>
-                            }
-                        </span>
-                    </div>
-                }
-            </div>
-
-            @if (isPaymentFailed)
-            {
-                <div class="alert alert-danger mt-3 mb-0">
-                    <p class="mb-0">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        @if (Model.Payment?.PaymentStatus == SD.Payment_Rejected)
-                        {
-                            <span>Your payment was declined. Please try again with a different payment method.</span>
-                        }
-                        else
-                        {
-                            <span>Payment failed to process. Please try booking again.</span>
-                        }
-                    </p>
-                </div>
-            }
-        }
-    </div>
-
-    <div class="card-footer bg-white">
-        @if (isPaymentFailed)
-        {
-            @if (isUpcoming)
-            {
-                <a asp-area="Customer"
-                   asp-controller="Home"
-                   asp-action="Details"
-                   asp-route-id="@Model.Showtime.MovieId"
-                   class="btn btn-primary w-100">
-                    <i class="bi bi-arrow-repeat"></i> Try Booking Again
-                </a>
-            }
-            else
-            {
-                <div class="text-center text-danger">
-                    <small>Showtime has passed. Cannot rebook.</small>
-                </div>
-            }
-        }
-        else if (isUpcoming && !isCancelled)
-        {
-            <div class="d-flex justify-content-between align-items-center">
-                <a onclick="Cancel('/Customer/Booking/CancelBooking/@Model.BookingId')"
-                   class="btn btn-sm btn-outline-danger cancel-booking-btn" data-booking-id="@Model.BookingId"
-                   style="cursor: pointer">
-                    Cancel Booking
-                </a>
-                <a asp-area="Customer"
-                   asp-controller="Booking"
-                   asp-action="BookingConfirmation"
-                   asp-route-bookingId="@Model.BookingId"
-                   class="btn btn-sm btn-outline-primary">
-                    View Details
-                </a>
-            </div>
-        }
-        else
-        {
-            <a asp-area="Customer"
-               asp-controller="Booking"
-               asp-action="BookingConfirmation"
-               asp-route-bookingId="@Model.BookingId"
-               class="btn btn-sm btn-outline-primary w-100">
-                View Details
-            </a>
-        }
-    </div>
+			<div class="booking-details">
+				<div class="d-flex justify-content-between mb-2">
+					<span class="text-muted">Tickets:</span>
+					<span>@Model.Tickets.Count</span>
+				</div>
+				<div class="d-flex justify-content-between mb-2">
+					<span class="text-muted">Seats:</span>
+					<span>@string.Join(", ", Model.Tickets.Select(t => $"{t.Seat?.SeatRow}{t.Seat?.SeatColumn + 1}"))</span>
+				</div>
+				<div class="d-flex justify-content-between">
+					<span class="text-muted">Total:</span>
+					<span class="fw-bold">$@(Model.TotalPrice?.ToString("0.00") ?? "0.00")</span>
+				</div>
+			</div>
+		}
+	</div>
+	<div class="card-footer bg-white">
+		@if (isUpcoming && Model.Status?.ToLower() != SD.Status_Cancelled)
+		{
+			<div class="d-flex justify-content-between align-items-center">
+				<a onclick="Cancel('/Customer/Booking/CancelBooking/@Model.BookingId')"
+				   class="btn btn-sm btn-outline-danger cancel-booking-btn" data-booking-id="@Model.BookingId"
+				   style="cursor: pointer">
+					Cancel Booking
+				</a>
+				<a asp-area="Customer"
+				   asp-controller="Booking"
+				   asp-action="BookingConfirmation"
+				   asp-route-bookingId="@Model.BookingId"
+				   class="btn btn-sm btn-outline-primary">
+					View Details
+				</a>
+			</div>
+		}
+		else
+		{
+			<a asp-area="Customer"
+			   asp-controller="Booking"
+			   asp-action="BookingConfirmation"
+			   asp-route-bookingId="@Model.BookingId"
+			   class="btn btn-sm btn-outline-primary w-100">
+				View Details
+			</a>
+		}
+	</div>
 </div>

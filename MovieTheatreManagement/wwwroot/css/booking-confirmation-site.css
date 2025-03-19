@@ -1,16 +1,4 @@
-﻿
-.error-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid #dc3545;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.success-checkmark {
+﻿.success-checkmark {
     width: 80px;
     height: 80px;
     margin: 0 auto;

@@ -154,7 +154,6 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 
 			try
 			{
-				// Create the booking
 				var booking = new Booking
 				{
 					ShowtimeId = showtimeId,
@@ -324,16 +323,16 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 			{
 				// Get the booking and update status
 				var booking = _unitOfWork.Booking.GetBookingWithDetails(bookingId);
-				var payment = _unitOfWork.Payment.GetPaymentByBookingId(bookingId);
-				if (booking != null && payment != null)
+				if (booking != null)
 				{
-					_unitOfWork.Booking.UpdateStatus(bookingId, SD.Status_PaymentFailed);
-					_unitOfWork.Payment.UpdateStatus(payment.PaymentId, SD.Payment_Rejected);
+					_unitOfWork.Booking.RemoveBooking(booking);
+					//_unitOfWork.Booking.UpdateStatus(bookingId, SD.Status_PaymentFailed);
+					//_unitOfWork.Payment.UpdateStatus(payment.PaymentId, SD.Payment_Rejected);
 					_unitOfWork.Save();
 				}
 
 				TempData["error"] = "Payment was cancelled. Your booking is not confirmed.";
-				return RedirectToAction(nameof(BookingConfirmation), new { bookingId = bookingId });
+				return RedirectToAction(nameof(Index), "Home");
 			}
 			catch (Exception ex)
 			{

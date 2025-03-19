@@ -1,6 +1,7 @@
 ﻿using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Models.ViewModels;
 using Services.IService;
 using System;
 using System.Collections.Generic;
@@ -125,6 +126,11 @@ namespace Services
 			}
 			booking.Status = status;
 			_context.Bookings.Update(booking);
+		}
+
+		public void RemoveBooking(Booking booking)
+		{
+			_context.Bookings.Remove(booking);
 		}
 
 	}

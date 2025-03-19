@@ -47,19 +47,6 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="payment-failed-tab" data-bs-toggle="tab" data-bs-target="#payment-failed-bookings" type="button" role="tab" aria-controls="payment-failed-bookings" aria-selected="false">
-                        Payment Issues
-                        @{
-                            var paymentFailedCount = Model.Count(b => b.Status == SD.Status_PaymentFailed ||
-                            (b.Payment != null && b.Payment.PaymentStatus == SD.Payment_Rejected));
-                            if (paymentFailedCount > 0)
-                            {
-                                <span class="badge bg-danger ms-2">@paymentFailedCount</span>
-                            }
-                        }
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all-bookings" type="button" role="tab" aria-controls="all-bookings" aria-selected="false">
                         All
                     </button>
@@ -71,11 +58,7 @@
             <!-- Upcoming Bookings Tab -->
             <div class="tab-pane fade show active" id="upcoming-bookings" role="tabpanel" aria-labelledby="upcoming-tab">
                 @{
-                    var upcomingBookings = Model.Where(b =>
-                    b.Showtime?.StartTime > DateTime.Now &&
-                    b.Status != SD.Status_Cancelled &&
-                    b.Status != SD.Status_PaymentFailed &&
-                    (b.Payment == null || b.Payment.PaymentStatus != SD.Payment_Rejected)).ToList();
+                    var upcomingBookings = Model.Where(b => b.Showtime?.StartTime > DateTime.Now).ToList();
 
                     if (upcomingBookings.Any())
                     {
@@ -100,11 +83,7 @@
             <!-- Past Bookings Tab -->
             <div class="tab-pane fade" id="past-bookings" role="tabpanel" aria-labelledby="past-tab">
                 @{
-                    var pastBookings = Model.Where(b =>
-                    b.Showtime?.StartTime <= DateTime.Now &&
-                    b.Status != SD.Status_Cancelled &&
-                    b.Status != SD.Status_PaymentFailed &&
-                    (b.Payment == null || b.Payment.PaymentStatus != SD.Payment_Rejected)).ToList();
+                    var pastBookings = Model.Where(b => b.Showtime?.StartTime <= DateTime.Now).ToList();
 
                     if (pastBookings.Any())
                     {
@@ -121,33 +100,6 @@
                     {
                         <div class="alert alert-info text-center">
                             <p>You don't have any past bookings.</p>
-                        </div>
-                    }
-                }
-            </div>
-
-            <!-- Payment Failed Bookings Tab -->
-            <div class="tab-pane fade" id="payment-failed-bookings" role="tabpanel" aria-labelledby="payment-failed-tab">
-                @{
-                    var paymentFailedBookings = Model.Where(b =>
-                    b.Status == SD.Status_PaymentFailed ||
-                    (b.Payment != null && b.Payment.PaymentStatus == SD.Payment_Rejected)).ToList();
-
-                    if (paymentFailedBookings.Any())
-                    {
-                        <div class="row">
-                            @foreach (var booking in paymentFailedBookings.OrderByDescending(b => b.Showtime?.StartTime))
-                            {
-                                <div class="col-md-6 mb-4">
-                                    <partial name="_BookingCard" model="booking" />
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-success text-center">
-                            <p>You don't have any bookings with payment issues.</p>
                         </div>
                     }
                 }
@@ -177,12 +129,6 @@
                 e.preventDefault();
                 $(this).tab('show');
             });
-
-            // Show the Payment Issues tab if there are failed payments and the user is coming from payment cancellation
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('paymentFailed') && urlParams.get('paymentFailed') === 'true') {
-                $('#payment-failed-tab').tab('show');
-            }
         });
     </script>
 }

@@ -19,7 +19,6 @@ namespace Utility
 		public const string Status_Reserve = "reserved";
 		public const string Status_Paid = "paid";
 		public const string Status_Cancelled = "cancelled";
-		public const string Status_PaymentFailed = "payment_failed";
 
 		public const string Payment_Pending = "pending";
 		public const string Payment_Approved = "approved";
