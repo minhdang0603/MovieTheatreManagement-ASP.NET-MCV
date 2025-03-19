@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Models;
+using Utility;
 
 namespace DataAccess.Data;
 public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
@@ -41,9 +42,25 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 
 	public virtual DbSet<Ticket> Tickets { get; set; }
 
+	public virtual DbSet<Payment> Payments { get; set; }
+
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
+
+		modelBuilder.Entity<Payment>(entity =>
+		{
+			entity.HasKey(e => e.PaymentId);
+			entity.ToTable("Payment");
+			entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+			entity.Property(e => e.PamentIntentId).HasColumnName("payment_intent_id");
+			entity.Property(e => e.SessionId).HasColumnName("session_id");
+			entity.Property(e => e.PaymentStatus).HasColumnName("payment_status").HasDefaultValue(SD.Payment_Pending);
+			entity.Property(e => e.PaymentType).HasColumnName("payment_type").HasDefaultValue(SD.PaymentMethod_Cash);
+			entity.Property(e => e.TrackingNumber).HasColumnName("tracking_number");
+			entity.Property(e => e.PaymentDate).HasColumnName("payment_date");
+			entity.Property(e => e.PaymentDueDate).HasColumnName("payment_due_date");
+
 		modelBuilder.Entity<Booking>(entity =>
 		{
 			entity.HasKey(e => e.BookingId).HasName("PK__Booking__5DE3A5B19905FE69");
@@ -58,6 +75,12 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 				.HasDefaultValue("reserved")
 				.HasColumnName("status");
 			entity.Property(e => e.TotalPrice).HasColumnName("total_price");
+			entity.Property(e => e.PaymentId).HasColumnName("payment_id");
+
+			entity.HasOne(entity => entity.Payment)
+				.WithOne(payment => payment.Booking)
+				.HasForeignKey<Booking>(entity => entity.PaymentId)
+				.HasConstraintName("FK_Booking_Payment");
 
 			entity.HasOne(d => d.Showtime).WithMany(p => p.Bookings)
 				.HasForeignKey(d => d.ShowtimeId)

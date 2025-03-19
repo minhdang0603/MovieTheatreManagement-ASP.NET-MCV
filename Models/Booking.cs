@@ -15,6 +15,9 @@ public partial class Booking
 
     public string? Status { get; set; }
 
+	public int PaymentId { get; set; }
+    public virtual Payment Payment { get; set; }
+
 	public string ApplicationUserId { get; set; }
 
     [ForeignKey(nameof(ApplicationUserId))]

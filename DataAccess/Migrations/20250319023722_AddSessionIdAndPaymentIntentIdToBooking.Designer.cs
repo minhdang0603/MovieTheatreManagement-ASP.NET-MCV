@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250319023722_AddSessionIdAndPaymentIntentIdToBooking")]
+    partial class AddSessionIdAndPaymentIntentIdToBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,9 +245,11 @@ namespace DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("PaymentId")
-                        .HasColumnType("int")
-                        .HasColumnName("payment_id");
+                    b.Property<string>("PamentIntentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ShowtimeId")
                         .HasColumnType("int")
@@ -266,9 +271,6 @@ namespace DataAccess.Migrations
                         .HasName("PK__Booking__5DE3A5B19905FE69");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("PaymentId")
-                        .IsUnique();
 
                     b.HasIndex("ShowtimeId");
 
@@ -539,56 +541,6 @@ namespace DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Models.Payment", b =>
-                {
-                    b.Property<int>("PaymentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("payment_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
-
-                    b.Property<int>("BookingId")
-                        .HasColumnType("int")
-                        .HasColumnName("booking_id");
-
-                    b.Property<string>("PamentIntentId")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("payment_intent_id");
-
-                    b.Property<DateTime>("PaymentDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("payment_date");
-
-                    b.Property<DateOnly>("PaymentDueDate")
-                        .HasColumnType("date")
-                        .HasColumnName("payment_due_date");
-
-                    b.Property<string>("PaymentStatus")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("pending")
-                        .HasColumnName("payment_status");
-
-                    b.Property<string>("PaymentType")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("cash")
-                        .HasColumnName("payment_type");
-
-                    b.Property<string>("SessionId")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("session_id");
-
-                    b.Property<string>("TrackingNumber")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("tracking_number");
-
-                    b.HasKey("PaymentId");
-
-                    b.ToTable("Payment", (string)null);
-                });
-
             modelBuilder.Entity("Models.Room", b =>
                 {
                     b.Property<int>("RoomId")
@@ -856,21 +808,12 @@ namespace DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Models.Payment", "Payment")
-                        .WithOne("Booking")
-                        .HasForeignKey("Models.Booking", "PaymentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_Booking_Payment");
-
                     b.HasOne("Models.Showtime", "Showtime")
                         .WithMany("Bookings")
                         .HasForeignKey("ShowtimeId")
                         .HasConstraintName("FK_Booking_Showtime");
 
                     b.Navigation("ApplicationUser");
-
-                    b.Navigation("Payment");
 
                     b.Navigation("Showtime");
                 });
@@ -995,12 +938,6 @@ namespace DataAccess.Migrations
             modelBuilder.Entity("Models.MovieStatus", b =>
                 {
                     b.Navigation("Movies");
-                });
-
-            modelBuilder.Entity("Models.Payment", b =>
-                {
-                    b.Navigation("Booking")
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Models.Room", b =>
