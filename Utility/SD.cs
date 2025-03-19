@@ -19,14 +19,15 @@ namespace Utility
 		public const string Status_Reserve = "reserved";
 		public const string Status_Paid = "paid";
 		public const string Status_Cancelled = "cancelled";
+		public const string Status_PaymentFailed = "payment_failed";
 
 		public const string Payment_Pending = "pending";
 		public const string Payment_Approved = "approved";
 		public const string Payment_Rejected = "rejected";
 
 		public const string PaymentMethod_Cash = "cash";
-		public const string PaymentMethod_CreditCard = "credit_card";
+		public const string PaymentMethod_CreditCard = "card";
 
-
+		public const string Stripe_Paid = "paid";
 	}
 }

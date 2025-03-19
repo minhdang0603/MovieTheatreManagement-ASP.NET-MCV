@@ -100,16 +100,18 @@
 					<div class="card mb-4">
 						<div class="card-body">
 							<h5 class="mb-3">Payment Method</h5>
-							<div class="form-check mb-2">
-								<input class="form-check-input" type="radio" name="paymentMethod" id="payAtVenue" checked>
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="radio" name="paymentMethod" id="payAtVenue" value="@SD.PaymentMethod_Cash" checked>
 								<label class="form-check-label" for="payAtVenue">
-									Pay at the venue
+									<i class="bi bi-cash"></i> Pay at the venue
+									<small class="d-block text-muted">Pay when you arrive at the theater</small>
 								</label>
 							</div>
-							<div class="form-check disabled">
-								<input class="form-check-input" type="radio" name="paymentMethod" id="creditCard">
+							<div class="form-check">
+								<input class="form-check-input" type="radio" name="paymentMethod" id="creditCard" value="@SD.PaymentMethod_CreditCard">
 								<label class="form-check-label" for="creditCard">
-									Credit Card
+									<i class="bi bi-credit-card"></i> Pay with Credit Card
+									<small class="d-block text-muted">Secure payment via Stripe</small>
 								</label>
 							</div>
 						</div>
@@ -139,7 +141,7 @@
 	<script>
 		$(document).ready(function () {
 			$('input[type=radio][name=paymentMethod]').change(function () {
-				$('#selectedPaymentMethod').val(this.id === 'payAtVenue' ? '@SD.PaymentMethod_Cash' : '@SD.PaymentMethod_CreditCard');
+				$('#selectedPaymentMethod').val(this.value);
 			});
 		});
 	</script>

@@ -10,6 +10,9 @@ namespace Services.IService
 	public interface IPaymentService
 	{
 		void CreatePayment(Payment payment);
+		Payment GetPaymentByBookingId(int bookingId);
+		Payment GetPaymentBySessionId(string sessionId);
+		void UpdatePayment(Payment payment);
 		void UpdateStatus(int paymentId, string status);
 	}
 }

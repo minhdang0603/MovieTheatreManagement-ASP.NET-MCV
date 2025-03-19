@@ -67,12 +67,13 @@ namespace Services
 		public Booking GetBookingWithDetails(int bookingId)
 		{
 			return _context.Bookings
-				.Include(b => b.Showtime)
+				.Include(b => b.Showtime)!
 					.ThenInclude(s => s.Movie)
 				.Include(b => b.Showtime)
 					.ThenInclude(s => s.Room)
 				.Include(b => b.Tickets)
 					.ThenInclude(t => t.Seat)
+				.Include(b => b.Payment)
 				.FirstOrDefault(b => b.BookingId == bookingId);
 		}
 

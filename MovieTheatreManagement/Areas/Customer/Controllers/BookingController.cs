@@ -176,13 +176,66 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 				booking.TotalPrice = (int)selectedSeats.Sum(s => s.Type?.Price ?? 0);
 
 				_unitOfWork.Booking.CreateBooking(booking);
-				var payment = CreatePayment(paymentMethod, booking);
-				_unitOfWork.Payment.CreatePayment(payment);
 				HttpContext.Session.Clear();
 				_unitOfWork.Save();
 
-				TempData["success"] = "Booking confirmed successfully!";
-				return RedirectToAction(nameof(BookingConfirmation), new { bookingId = booking.BookingId });
+				if (paymentMethod == SD.PaymentMethod_Cash)
+				{
+					var cashPayment = new Payment
+					{
+						PaymentMethod = paymentMethod,
+						PaymentStatus = SD.Payment_Pending,
+						PaymentDueDate = DateOnly.FromDateTime(_unitOfWork.Showtime.GetShowtimeById(booking.ShowtimeId.Value).StartTime),
+						BookingId = booking.BookingId
+					};
+
+					_unitOfWork.Payment.CreatePayment(cashPayment);
+					_unitOfWork.Save();
+					TempData["success"] = "Booking confirmed successfully!";
+					return RedirectToAction(nameof(BookingConfirmation), new { bookingId = booking.BookingId });
+				}
+
+				var domain = $"{Request.Scheme}://{Request.Host}"; ;
+				var options = new Stripe.Checkout.SessionCreateOptions
+				{
+					PaymentMethodTypes = new List<string> { "card" },
+					LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+				{
+					new Stripe.Checkout.SessionLineItemOptions
+					{
+						PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+						{
+							UnitAmount = booking.TotalPrice * 100, // Stripe uses cents
+                            Currency = "usd",
+							ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+							{
+								Name = "Movie Tickets",
+								Description = $"Tickets for {_unitOfWork.Showtime.GetShowtimeById(showtimeId.Value).Movie.Title}"
+							}
+						},
+						Quantity = 1
+					},
+				},
+					Mode = "payment",
+					SuccessUrl = domain + $"/Customer/Booking/PaymentSuccess?bookingId={booking.BookingId}",
+					CancelUrl = domain + $"/Customer/Booking/PaymentCancel?bookingId={booking.BookingId}"
+				};
+				var service = new Stripe.Checkout.SessionService();
+				var session = service.Create(options);
+
+				var stripePayment = new Payment
+				{
+					PaymentMethod = paymentMethod,
+					PaymentStatus = SD.Payment_Pending,
+					SessionId = session.Id,
+					PaymentDueDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
+					BookingId = booking.BookingId
+				};
+
+				_unitOfWork.Payment.CreatePayment(stripePayment);
+				_unitOfWork.Save();
+
+				return Redirect(session.Url);
 			}
 			catch (Exception ex)
 			{
@@ -217,37 +270,78 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 			return View(bookings);
 		}
 
-		private Payment CreatePayment(string paymentMethod, Booking booking)
+		public IActionResult PaymentSuccess(int bookingId)
 		{
-			if (paymentMethod == SD.PaymentMethod_Cash)
+			try
 			{
-				return new Payment
+				var booking = _unitOfWork.Booking.GetBookingWithDetails(bookingId);
+				if (booking == null)
 				{
-					PaymentMethod = paymentMethod,
-					PaymentStatus = SD.Payment_Pending,
-					PaymentDueDate = DateOnly.FromDateTime(_unitOfWork.Showtime.GetShowtimeById(booking.ShowtimeId.Value).StartTime),
-					Booking = booking
-				};
-			}
+					TempData["error"] = "Booking not found";
+					return RedirectToAction("Index", "Home");
+				}
 
-			var domain = "https://localhost:7020/";
-			var options = new Stripe.Checkout.SessionCreateOptions
-			{
-				SuccessUrl = domain + "/customer/booking/",
-				LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+				// Get the payment
+				var payment = _unitOfWork.Payment.GetPaymentByBookingId(bookingId);
+				if (payment == null)
 				{
-					new Stripe.Checkout.SessionLineItemOptions
-					{
-						Price = "price_1MotwRLkdIwHu7ixYcPLm5uZ",
-						Quantity = 2,
-					},
-				},
-				Mode = "payment",
-			};
-			var service = new Stripe.Checkout.SessionService();
-			service.Create(options);
-			return null;
+					TempData["error"] = "Payment not found";
+					return RedirectToAction("Index", "Home");
+				}
+
+				// Verify payment status with Stripe
+				var sessionService = new Stripe.Checkout.SessionService();
+				var session = sessionService.Get(payment.SessionId);
+
+				if (session.PaymentStatus == SD.Stripe_Paid)
+				{
+					payment.PaymentDate = DateTime.Now;
+					payment.PaymentStatus = SD.Payment_Approved;
+					payment.PaymentIntentId = session.PaymentIntentId;
+					_unitOfWork.Booking.UpdateStatus(bookingId, SD.Status_Paid);
+					_unitOfWork.Payment.UpdatePayment(payment);
+					_unitOfWork.Save();
+
+					TempData["success"] = "Payment successful! Your booking is confirmed.";
+				}
+				else
+				{
+					TempData["error"] = "Payment pending or failed. Please contact support.";
+				}
+
+				return RedirectToAction(nameof(BookingConfirmation), new { bookingId = bookingId });
+			}
+			catch (Exception ex)
+			{
+				TempData["error"] = $"Error processing payment: {ex.Message}";
+				return RedirectToAction("Index", "Home");
+			}
 		}
+
+		public IActionResult PaymentCancel(int bookingId)
+		{
+			try
+			{
+				// Get the booking and update status
+				var booking = _unitOfWork.Booking.GetBookingWithDetails(bookingId);
+				var payment = _unitOfWork.Payment.GetPaymentByBookingId(bookingId);
+				if (booking != null && payment != null)
+				{
+					_unitOfWork.Booking.UpdateStatus(bookingId, SD.Status_PaymentFailed);
+					_unitOfWork.Payment.UpdateStatus(payment.PaymentId, SD.Payment_Rejected);
+					_unitOfWork.Save();
+				}
+
+				TempData["error"] = "Payment was cancelled. Your booking is not confirmed.";
+				return RedirectToAction(nameof(BookingConfirmation), new { bookingId = bookingId });
+			}
+			catch (Exception ex)
+			{
+				TempData["error"] = $"Error cancelling payment: {ex.Message}";
+				return RedirectToAction("Index", "Home");
+			}
+		}
+
 
 		#region API CALLS
 		[HttpPut]

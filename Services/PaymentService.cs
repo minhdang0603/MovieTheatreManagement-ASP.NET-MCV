@@ -19,6 +19,16 @@ namespace Services
 			_context = context;
 		}
 
+		public Payment GetPaymentByBookingId(int bookingId)
+		{
+			return _context.Payments.FirstOrDefault(p => p.BookingId == bookingId);
+		}
+
+		public Payment GetPaymentBySessionId(string sessionId)
+		{
+			return _context.Payments.FirstOrDefault(p => p.SessionId == sessionId);
+		}
+
 		public void CreatePayment(Payment payment)
 		{
 			_context.Payments.Add(payment);
@@ -35,22 +45,8 @@ namespace Services
 			_context.Payments.Update(payment);
 		}
 
-		public void UpdateStripePaymentId(int paymentId, string sessionId, string paymentIntentId)
+		public void UpdatePayment(Payment payment)
 		{
-			var payment = _context.Payments.Find(paymentId);
-			if (payment == null)
-			{
-				throw new Exception("Payment not found");
-			}
-			if(!string.IsNullOrEmpty(sessionId))
-			{
-				payment.SessionId = sessionId;
-			}
-			if (!string.IsNullOrEmpty(paymentIntentId))
-			{
-				payment.PaymentIntentId = paymentIntentId;
-				payment.PaymentDate = DateTime.Now;
-			}
 			_context.Payments.Update(payment);
 		}
 

@@ -76,7 +76,6 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 			entity.Property(e => e.BookingId).HasColumnName("booking_id");
 			entity.Property(e => e.ShowtimeId).HasColumnName("showtime_id");
 			entity.Property(e => e.Status)
-				.HasMaxLength(10)
 				.IsUnicode(false)
 				.HasDefaultValue("reserved")
 				.HasColumnName("status");
