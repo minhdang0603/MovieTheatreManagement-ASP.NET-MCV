@@ -21,6 +21,8 @@ namespace Services
 		public IShowtimeService Showtime { get; private set; }
 		public IBookingService Booking { get; private set; }
 
+		public IPaymentService Payment { get; private set; }
+
 		public UnitOfWork(ApplicationDbContext context)
 		{
 			_context = context;
@@ -32,6 +34,7 @@ namespace Services
 			SeatType = new SeatTypeService(_context);
 			Showtime = new ShowtimeService(_context);
 			Booking = new BookingService(_context);
+			Payment = new PaymentService(_context);
 		}
 
 		public void Save()

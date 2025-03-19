@@ -83,6 +83,30 @@
                                     <div class="col-sm-4 text-muted">Payment Method:</div>
                                     <div class="col-sm-8">Pay at venue</div>
                                 </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Payment Method:</div>
+                                    <div class="col-sm-8">
+                                        @(Model.Payment?.PaymentMethod == SD.PaymentMethod_Cash ? "Pay at venue" : "Credit Card")
+                                    </div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4 text-muted">Payment Status:</div>
+                                    <div class="col-sm-8">
+                                        @if (Model.Payment?.PaymentStatus == SD.Payment_Pending)
+                                        {
+                                            <span class="badge bg-warning">Pending</span>
+                                        }
+                                        else if (Model.Payment?.PaymentStatus == SD.Payment_Approved)
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Failed</span>
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

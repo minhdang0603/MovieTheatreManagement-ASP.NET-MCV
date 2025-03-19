@@ -4,6 +4,7 @@ using DataAccess.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250319035149_AddPaymentTableToDb")]
+    partial class AddPaymentTableToDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -545,6 +548,10 @@ namespace DataAccess.Migrations
                         .HasColumnType("int")
                         .HasColumnName("booking_id");
 
+                    b.Property<string>("PamentIntentId")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("payment_intent_id");
+
                     b.Property<DateTime?>("PaymentDate")
                         .HasColumnType("datetime2")
                         .HasColumnName("payment_date");
@@ -552,10 +559,6 @@ namespace DataAccess.Migrations
                     b.Property<DateOnly>("PaymentDueDate")
                         .HasColumnType("date")
                         .HasColumnName("payment_due_date");
-
-                    b.Property<string>("PaymentIntentId")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("payment_intent_id");
 
                     b.Property<string>("PaymentMethod")
                         .ValueGeneratedOnAdd()

@@ -115,5 +115,16 @@ namespace Services
 			return _context.Bookings.Any(b => b.BookingId == bookingId);
 		}
 
+		public void UpdateStatus(int bookingId, string status)
+		{
+			var booking = _context.Bookings.Find(bookingId);
+			if (booking == null)
+			{
+				throw new Exception("Booking not found");
+			}
+			booking.Status = status;
+			_context.Bookings.Update(booking);
+		}
+
 	}
 }

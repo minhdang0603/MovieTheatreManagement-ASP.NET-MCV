@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Models;
@@ -15,7 +16,6 @@ public partial class Booking
 
     public string? Status { get; set; }
 
-	public int PaymentId { get; set; }
     public virtual Payment Payment { get; set; }
 
 	public string ApplicationUserId { get; set; }

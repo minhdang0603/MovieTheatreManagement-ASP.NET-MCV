@@ -14,5 +14,6 @@ namespace Services.IService
 		void CreateBooking(Booking booking);
 		Booking GetBookingWithDetails(int bookingId);
 		List<Booking> GetUserBookings(string userId);
+		void UpdateStatus(int bookingId, string status);
 	}
 }

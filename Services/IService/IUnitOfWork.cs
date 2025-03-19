@@ -16,6 +16,7 @@ namespace Services.IService
 		ISeatTypeService SeatType { get; }
 		IShowtimeService Showtime { get; }
 		IBookingService Booking { get; }
+		IPaymentService Payment { get; }
 
 		void Save();
 	}

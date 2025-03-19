@@ -53,13 +53,19 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 			entity.HasKey(e => e.PaymentId);
 			entity.ToTable("Payment");
 			entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-			entity.Property(e => e.PamentIntentId).HasColumnName("payment_intent_id");
+			entity.Property(e => e.PaymentIntentId).HasColumnName("payment_intent_id");
 			entity.Property(e => e.SessionId).HasColumnName("session_id");
 			entity.Property(e => e.PaymentStatus).HasColumnName("payment_status").HasDefaultValue(SD.Payment_Pending);
-			entity.Property(e => e.PaymentType).HasColumnName("payment_type").HasDefaultValue(SD.PaymentMethod_Cash);
-			entity.Property(e => e.TrackingNumber).HasColumnName("tracking_number");
+			entity.Property(e => e.PaymentMethod).HasColumnName("payment_method").HasDefaultValue(SD.PaymentMethod_Cash);
 			entity.Property(e => e.PaymentDate).HasColumnName("payment_date");
 			entity.Property(e => e.PaymentDueDate).HasColumnName("payment_due_date");
+			entity.Property(e => e.BookingId).HasColumnName("booking_id");
+
+			entity.HasOne(p => p.Booking)
+				.WithOne(b => b.Payment)
+				.HasForeignKey<Payment>(p => p.BookingId)
+				.HasConstraintName("FK_Payment_Booking");
+		});
 
 		modelBuilder.Entity<Booking>(entity =>
 		{
@@ -75,12 +81,6 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 				.HasDefaultValue("reserved")
 				.HasColumnName("status");
 			entity.Property(e => e.TotalPrice).HasColumnName("total_price");
-			entity.Property(e => e.PaymentId).HasColumnName("payment_id");
-
-			entity.HasOne(entity => entity.Payment)
-				.WithOne(payment => payment.Booking)
-				.HasForeignKey<Booking>(entity => entity.PaymentId)
-				.HasConstraintName("FK_Booking_Payment");
 
 			entity.HasOne(d => d.Showtime).WithMany(p => p.Bookings)
 				.HasForeignKey(d => d.ShowtimeId)
@@ -333,7 +333,7 @@ public partial class ApplicationDbContext : IdentityDbContext<IdentityUser>
 
 		modelBuilder.Entity<Room>().HasData(
 			new Room { RoomId = 1, Name = "IMAX Theater", TotalColumns = 10, TotalRows = 5 },
-			new Room { RoomId = 2, Name = "Dolby Atmos", TotalColumns = 10, TotalRows= 8 },
+			new Room { RoomId = 2, Name = "Dolby Atmos", TotalColumns = 10, TotalRows = 8 },
 			new Room { RoomId = 3, Name = "Standard Hall", TotalColumns = 10, TotalRows = 12 }
 		);
 

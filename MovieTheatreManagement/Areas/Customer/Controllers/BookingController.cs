@@ -4,6 +4,7 @@ using Models;
 using Services.IService;
 using System.Security.Claims;
 using Utility;
+using Stripe;
 
 namespace MovieTheatreManagement.Areas.Customer.Controllers
 {
@@ -129,7 +130,7 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult ConfirmBooking()
+		public IActionResult ConfirmBooking(string paymentMethod)
 		{
 			int? showtimeId = HttpContext.Session.GetInt32(SD.Session_SelectedShowtimeId);
 			string seatIds = HttpContext.Session.GetString(SD.Session_SelectedSeatIds);
@@ -157,7 +158,7 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 				var booking = new Booking
 				{
 					ShowtimeId = showtimeId,
-					Status = SD.Status_Confirmed,
+					Status = SD.Status_Reserve,
 					ApplicationUserId = userId
 				};
 
@@ -174,8 +175,9 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 				var selectedSeats = _unitOfWork.Room.GetSeatsByIds(selectedSeatIds);
 				booking.TotalPrice = (int)selectedSeats.Sum(s => s.Type?.Price ?? 0);
 
-				// Save the booking
 				_unitOfWork.Booking.CreateBooking(booking);
+				var payment = CreatePayment(paymentMethod, booking);
+				_unitOfWork.Payment.CreatePayment(payment);
 				HttpContext.Session.Clear();
 				_unitOfWork.Save();
 
@@ -213,6 +215,38 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 
 			var bookings = _unitOfWork.Booking.GetUserBookings(userId);
 			return View(bookings);
+		}
+
+		private Payment CreatePayment(string paymentMethod, Booking booking)
+		{
+			if (paymentMethod == SD.PaymentMethod_Cash)
+			{
+				return new Payment
+				{
+					PaymentMethod = paymentMethod,
+					PaymentStatus = SD.Payment_Pending,
+					PaymentDueDate = DateOnly.FromDateTime(_unitOfWork.Showtime.GetShowtimeById(booking.ShowtimeId.Value).StartTime),
+					Booking = booking
+				};
+			}
+
+			var domain = "https://localhost:7020/";
+			var options = new Stripe.Checkout.SessionCreateOptions
+			{
+				SuccessUrl = domain + "/customer/booking/",
+				LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
+				{
+					new Stripe.Checkout.SessionLineItemOptions
+					{
+						Price = "price_1MotwRLkdIwHu7ixYcPLm5uZ",
+						Quantity = 2,
+					},
+				},
+				Mode = "payment",
+			};
+			var service = new Stripe.Checkout.SessionService();
+			service.Create(options);
+			return null;
 		}
 
 		#region API CALLS
