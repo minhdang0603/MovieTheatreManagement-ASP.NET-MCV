@@ -198,27 +198,30 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 				var options = new Stripe.Checkout.SessionCreateOptions
 				{
 					PaymentMethodTypes = new List<string> { "card" },
-					LineItems = new List<Stripe.Checkout.SessionLineItemOptions>
-				{
-					new Stripe.Checkout.SessionLineItemOptions
-					{
-						PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
-						{
-							UnitAmount = booking.TotalPrice * 100, // Stripe uses cents
-                            Currency = "usd",
-							ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
-							{
-								Name = "Movie Tickets",
-								Description = $"Tickets for {_unitOfWork.Showtime.GetShowtimeById(showtimeId.Value).Movie.Title}"
-							}
-						},
-						Quantity = 1
-					},
-				},
+					LineItems = new List<Stripe.Checkout.SessionLineItemOptions>(),
 					Mode = "payment",
 					SuccessUrl = domain + $"/Customer/Booking/PaymentSuccess?bookingId={booking.BookingId}",
 					CancelUrl = domain + $"/Customer/Booking/PaymentCancel?bookingId={booking.BookingId}"
 				};
+
+				foreach (var item in booking.Tickets)
+				{
+					var sessionLineItem = new Stripe.Checkout.SessionLineItemOptions
+					{
+						PriceData = new Stripe.Checkout.SessionLineItemPriceDataOptions
+						{
+							UnitAmount = (long)(item.Seat.Type.Price * 100), // Stripe uses cents
+							Currency = "usd",
+							ProductData = new Stripe.Checkout.SessionLineItemPriceDataProductDataOptions
+							{
+								Name = $"Seat: {item.Seat.SeatRow}{item.Seat.SeatColumn + 1}",
+							}
+						},
+						Quantity = 1
+					};
+					options.LineItems.Add(sessionLineItem);
+				}
+
 				var service = new Stripe.Checkout.SessionService();
 				var session = service.Create(options);
 
@@ -265,7 +268,7 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 				return RedirectToPage("/Account/Login", new { area = "Identity" });
 			}
 
-			var bookings = _unitOfWork.Booking.GetUserBookings(userId);
+			var bookings = _unitOfWork.Booking.GetUserBookings(userId).OrderByDescending(b => b.BookingId).ToList();
 			return View(bookings);
 		}
 
@@ -348,9 +351,48 @@ namespace MovieTheatreManagement.Areas.Customer.Controllers
 		{
 			try
 			{
+				var booking = _unitOfWork.Booking.GetBookingWithDetails(id);
+
+				if (booking == null)
+				{
+					TempData["error"] = "Booking not found";
+					return RedirectToAction(nameof(MyBookings));
+				}
+
+				if (booking.Payment != null &&
+					booking.Status == SD.Status_Paid &&
+					booking.Payment.PaymentMethod == SD.PaymentMethod_CreditCard &&
+					booking.Payment.PaymentStatus == SD.Payment_Approved &&
+					!string.IsNullOrEmpty(booking.Payment.PaymentIntentId))
+				{
+					var options = new RefundCreateOptions
+					{
+						PaymentIntent = booking.Payment.PaymentIntentId,
+						Reason = RefundReasons.RequestedByCustomer
+					};
+
+					var service = new RefundService();
+					var refund = service.Create(options);
+
+					if (refund.Status == SD.Refund_Success)
+					{
+						TempData["success"] = "Your booking has been cancelled and payment refunded.";
+
+						booking.Payment.PaymentStatus = SD.Payment_Refunded;
+						_unitOfWork.Payment.UpdatePayment(booking.Payment);
+					}
+					else
+					{
+						TempData["warning"] = "Your booking has been cancelled but there was an issue with the refund. Our team will contact you.";
+					}
+				}
+				else
+				{
+					TempData["success"] = "Your booking has been cancelled.";
+				}
+
 				_unitOfWork.Booking.CancelBooking(id);
 				_unitOfWork.Save();
-				TempData["success"] = "Cancel booking successful";
 			}
 			catch (Exception ex)
 			{

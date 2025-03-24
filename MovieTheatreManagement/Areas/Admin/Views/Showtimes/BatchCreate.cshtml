@@ -1,0 +1,221 @@
+﻿@model BatchShowtimeVM
+
+@{
+    ViewData["Title"] = "Create Multiple Showtimes";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-info bg-gradient text-white text-center">
+            <h2 class="mb-0">Create Multiple Showtimes</h2>
+        </div>
+        <div class="card-body p-4">
+            <form asp-action="BatchCreate" method="post" id="batchCreateForm">
+                <div class="border p-4 rounded">
+                    <h4 class="mb-3">1. Select Movie and Date Range</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 form-floating mb-3">
+                            <select asp-for="MovieId" class="form-select border-0 shadow-sm" asp-items="Model.MovieList">
+                                <option disabled selected>--Select Movie--</option>
+                            </select>
+                            <label asp-for="MovieId" class="form-label">Movie</label>
+                            <span asp-validation-for="MovieId" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 form-floating mb-3">
+                            <input asp-for="StartDate" class="form-control border-0 shadow-sm" type="date" />
+                            <label asp-for="StartDate" class="form-label">Start Date</label>
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 form-floating mb-3">
+                            <input asp-for="EndDate" class="form-control border-0 shadow-sm" type="date" />
+                            <label asp-for="EndDate" class="form-label">End Date</label>
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">2. Select Days and Times</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Days of Week</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                @foreach (var day in Enum.GetValues<DayOfWeek>())
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="selectedDays" value="@day" id="day-@day" />
+                                        <label class="form-check-label" for="day-@day">@day</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Time Slots</label>
+                            <div id="timeSlots" class="d-flex flex-wrap gap-2 mb-2">
+                                <!-- Time slots will be added here dynamically -->
+                            </div>
+                            <div class="input-group">
+                                <input type="time" id="newTimeSlot" class="form-control" />
+                                <button type="button" id="addTimeSlot" class="btn btn-outline-secondary">Add Time</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4 class="mb-3">3. Select Preferred Rooms</h4>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Preferred Rooms</label>
+                            <div class="d-flex flex-wrap gap-3">
+                                @foreach (var room in Model.RoomList)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="selectedRooms" value="@room.Value" id="room-@room.Value" />
+                                        <label class="form-check-label" for="room-@room.Value">@room.Text</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                <input asp-for="AutoResolveConflicts" class="form-check-input" />
+                                <label asp-for="AutoResolveConflicts" class="form-check-label">Automatically resolve conflicts by trying different rooms</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-info w-100" id="submitButton">
+                            <i class="bi bi-plus-circle"></i> <span>Create Showtimes</span>
+                        </button>
+                        <a asp-controller="showtimes" asp-action="index" class="btn btn-outline-info w-100">
+                            <i class="bi bi-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .time-slot-badge {
+        margin: 0.25rem;
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .time-slot-badge .btn-close {
+            font-size: 0.75rem;
+            padding: 0.25rem;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add time slot
+            $('#addTimeSlot').click(function() {
+                const timeInput = $('#newTimeSlot').val();
+                if (timeInput) {
+                    addTimeSlot(timeInput);
+                    $('#newTimeSlot').val('');
+                }
+            });
+
+            // Allow pressing Enter in time input to add slot
+            $('#newTimeSlot').keypress(function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#addTimeSlot').click();
+                }
+            });
+
+            // Function to add a time slot
+            function addTimeSlot(time) {
+                const slot = $(`
+                    <div class="badge bg-light text-dark p-2 d-flex align-items-center time-slot-badge">
+                        <span>${time}</span>
+                        <input type="hidden" name="timeSlots" value="${time}" />
+                        <button type="button" class="btn-close ms-2" aria-label="Remove"></button>
+                    </div>
+                `);
+
+                slot.find('.btn-close').click(function() {
+                    slot.remove();
+                });
+
+                $('#timeSlots').append(slot);
+            }
+
+            // Add some common time slots
+            function addCommonTimeSlots() {
+                // Option to add some common time slots
+                const commonTimes = ['10:00', '13:00', '16:00', '19:00', '21:30'];
+
+                if (confirm("Would you like to add some common time slots to start with?")) {
+                    commonTimes.forEach(time => addTimeSlot(time));
+                }
+            }
+
+            // Call when page loads
+            if ($('#timeSlots').children().length === 0) {
+                setTimeout(addCommonTimeSlots, 500);
+            }
+
+            // Form validation
+            $('#batchCreateForm').on('submit', function(e) {
+                const movieId = $('#MovieId').val();
+                const startDate = $('#StartDate').val();
+                const endDate = $('#EndDate').val();
+                const selectedDays = $('input[name="selectedDays"]:checked').length;
+                const timeSlots = $('.time-slot-badge').length;
+                const selectedRooms = $('input[name="selectedRooms"]:checked').length;
+
+                let isValid = true;
+
+                if (!movieId || movieId === '--Select Movie--') {
+                    alert('Please select a movie.');
+                    isValid = false;
+                }
+
+                if (!startDate) {
+                    alert('Please select a start date.');
+                    isValid = false;
+                }
+
+                if (!endDate) {
+                    alert('Please select an end date.');
+                    isValid = false;
+                }
+
+                if (selectedDays === 0) {
+                    alert('Please select at least one day of the week.');
+                    isValid = false;
+                }
+
+                if (timeSlots === 0) {
+                    alert('Please add at least one time slot.');
+                    isValid = false;
+                }
+
+                if (selectedRooms === 0) {
+                    alert('Please select at least one room.');
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
+
+}

@@ -108,6 +108,97 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
+		public IActionResult BatchCreate()
+		{
+			var batchVM = new BatchShowtimeVM
+			{
+				MovieList = _unitOfWork.Movie.GetMovieList().Select(m => new SelectListItem()
+				{
+					Text = m.Title,
+					Value = m.MovieId.ToString()
+				}),
+				RoomList = _unitOfWork.Room.GetRoomList().Select(r => new SelectListItem()
+				{
+					Text = r.Name,
+					Value = r.RoomId.ToString()
+				})
+			};
+
+			return View(batchVM);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult BatchCreate(BatchShowtimeVM batchVM, string[] selectedDays, string[] selectedRooms, string[] timeSlots)
+		{
+			if (!ModelState.IsValid)
+			{
+				batchVM.MovieList = _unitOfWork.Movie.GetMovieList().Select(m => new SelectListItem()
+				{
+					Text = m.Title,
+					Value = m.MovieId.ToString()
+				});
+				batchVM.RoomList = _unitOfWork.Room.GetRoomList().Select(r => new SelectListItem()
+				{
+					Text = r.Name,
+					Value = r.RoomId.ToString()
+				});
+				return View(batchVM);
+			}
+
+			// Process the selected days
+			batchVM.SelectedDays = new List<DayOfWeek>();
+			foreach (var day in selectedDays)
+			{
+				if (Enum.TryParse<DayOfWeek>(day, out var dayOfWeek))
+				{
+					batchVM.SelectedDays.Add(dayOfWeek);
+				}
+			}
+
+			// Process the selected rooms
+			batchVM.PreferredRoomIds = selectedRooms.Select(int.Parse).ToList();
+
+			// Process the time slots
+			batchVM.TimeSlots = new List<TimeSpan>();
+			foreach (var slot in timeSlots)
+			{
+				if (TimeSpan.TryParse(slot, out var timeSpan))
+				{
+					batchVM.TimeSlots.Add(timeSpan);
+				}
+			}
+
+			try
+			{
+				// Generate showtimes
+				var result = _unitOfWork.Showtime.CreateBatchShowtimes(batchVM);
+
+				// Save the results for the results page
+				batchVM.SuccessCount = result.CreatedShowtimes.Count;
+				batchVM.FailureCount = result.ErrorMessages.Count;
+				batchVM.ErrorMessages = result.ErrorMessages;
+				batchVM.CreatedShowtimes = result.CreatedShowtimes;
+
+				if (result.CreatedShowtimes.Count > 0)
+				{
+					TempData["success"] = $"Successfully created {result.CreatedShowtimes.Count} showtimes.";
+				}
+
+				if (result.ErrorMessages.Count > 0)
+				{
+					TempData["error"] = $"Failed to create {result.ErrorMessages.Count} showtimes. See details for more information.";
+				}
+			}
+			catch (Exception ex)
+			{
+				batchVM.ErrorMessages.Add($"An error occurred: {ex.Message}");
+				TempData["error"] = "An error occurred during batch creation.";
+			}
+
+			return View("BatchCreateResults", batchVM);
+		}
+
 		#region API CALLS
 		[HttpDelete]
 		public IActionResult Delete(int? id)

@@ -1,0 +1,93 @@
+﻿@model BatchShowtimeVM
+
+@{
+    ViewData["Title"] = "Batch Creation Results";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-info bg-gradient text-white text-center">
+            <h2 class="mb-0">Showtime Creation Results</h2>
+        </div>
+        <div class="card-body p-4">
+            <div class="alert @(Model.FailureCount > 0 ? "alert-warning" : "alert-success")">
+                <h4 class="alert-heading">
+                    @if (Model.SuccessCount > 0 && Model.FailureCount == 0)
+                    {
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        <span>All Showtimes Created Successfully!</span>
+                    }
+                    else if (Model.SuccessCount > 0 && Model.FailureCount > 0)
+                    {
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <span>Some Showtimes Created with Warnings</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-x-circle-fill me-2"></i>
+                        <span>Failed to Create Showtimes</span>
+                    }
+                </h4>
+                <p>Successfully created @Model.SuccessCount showtime(s). Failed to create @Model.FailureCount showtime(s).</p>
+            </div>
+
+            @if (Model.CreatedShowtimes.Count > 0)
+            {
+                <div class="mt-4">
+                    <h4>Successfully Created Showtimes</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Movie</th>
+                                    <th>Room</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var showtime in Model.CreatedShowtimes.OrderBy(s => s.StartTime))
+                                {
+                                    <tr>
+                                        <td>@showtime.Movie?.Title</td>
+                                        <td>@showtime.Room?.Name</td>
+                                        <td>@showtime.StartTime.ToString("yyyy-MM-dd")</td>
+                                        <td>@showtime.StartTime.ToString("HH:mm")</td>
+                                        <td>
+                                            <a asp-action="Upsert" asp-route-id="@showtime.ShowtimeId" class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            @if (Model.ErrorMessages.Count > 0)
+            {
+                <div class="mt-4">
+                    <h4>Errors</h4>
+                    <ul class="list-group">
+                        @foreach (var error in Model.ErrorMessages)
+                        {
+                            <li class="list-group-item list-group-item-danger">@error</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="mt-4 d-flex gap-2">
+                <a asp-controller="showtimes" asp-action="index" class="btn btn-outline-info w-100">
+                    <i class="bi bi-arrow-left"></i> Back to Showtimes
+                </a>
+                <a asp-controller="showtimes" asp-action="BatchCreate" class="btn btn-info w-100">
+                    <i class="bi bi-plus-circle"></i> Create More Showtimes
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

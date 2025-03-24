@@ -1,4 +1,5 @@
 ﻿using Models;
+using Models.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,6 @@ namespace Services.IService
 		void UpdateShowtime(Showtime showtime);
 		IEnumerable<Room> GetAvailableRooms(DateTime startTime, int movieId, int? showtimeId);
 		List<int> GetBookedSeats(int showtimeId);
+		BatchShowtimeResult CreateBatchShowtimes(BatchShowtimeVM batchVM);
 	}
 }
