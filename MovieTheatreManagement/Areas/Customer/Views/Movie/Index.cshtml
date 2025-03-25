@@ -1,0 +1,227 @@
+﻿@model MovieListVM
+@{
+	ViewData["Title"] = Model.CategoryName ?? "Movies";
+}
+
+<div class="container my-5">
+	<!-- Search and Sort Bar -->
+	<div class="card shadow-sm mb-4">
+		<div class="card-body">
+			<div class="row align-items-center">
+				<div class="col-md-10">
+					<div class="input-group">
+						<span class="input-group-text bg-transparent border-end-0">
+							<i class="bi bi-search"></i>
+						</span>
+						<input type="text" id="searchInput" class="form-control border-start-0" placeholder="Search by title or director...">
+					</div>
+				</div>
+				<div class="col-md-2 d-flex justify-content-md-end mt-3 mt-md-0">
+					<div class="btn-group">
+						<button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+							<i class="bi bi-filter"></i> Sort By
+						</button>
+						<ul class="dropdown-menu dropdown-menu-end">
+							<li><button class="dropdown-item sort-btn active" data-sort="title">Title (A-Z)</button></li>
+							<li><button class="dropdown-item sort-btn" data-sort="title-desc">Title (Z-A)</button></li>
+							<li><button class="dropdown-item sort-btn" data-sort="release-new">Newest First</button></li>
+							<li><button class="dropdown-item sort-btn" data-sort="release-old">Oldest First</button></li>
+							<li><button class="dropdown-item sort-btn" data-sort="duration-long">Longest Duration</button></li>
+							<li><button class="dropdown-item sort-btn" data-sort="duration-short">Shortest Duration</button></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Genre Filter Pills -->
+	<div class="mb-4">
+		<div class="d-flex flex-wrap gap-2">
+			<button class="btn btn-sm btn-outline-primary genre-filter active" data-genre="">All Genres</button>
+			@foreach (var genre in Model.Genres)
+			{
+				<button class="btn btn-sm btn-outline-primary genre-filter" data-genre="@genre.GenreId">@genre.GenreName</button>
+			}
+		</div>
+	</div>
+
+	<!-- Movies Grid -->
+	<div class="row g-4 mb-5" id="moviesContainer">
+		@foreach (var movie in Model.Movies)
+		{
+			<div class="col-xl-3 col-lg-4 col-md-6 movie-item"
+				 data-title="@movie.Title.ToLower()"
+				 data-release="@(movie.ReleaseDate?.ToString("yyyyMMdd") ?? "0")"
+				 data-duration="@movie.Duration"
+				 data-genres="@(string.Join(",", movie.MovieGenres?.Select(mg => mg.GenreId) ?? new List<int>()))">
+
+				<div class="card h-100 movie-card shadow-sm">
+					<div class="position-relative">
+						<img src="@(string.IsNullOrEmpty(movie.ImageUrl) ? "/api/placeholder/400/600" : movie.ImageUrl)"
+							 class="card-img-top movie-card-image"
+							 alt="@movie.Title" />
+						<div class="movie-overlay">
+							<div class="w-100">
+								<div class="movie-badge-container">
+									<span class="badge bg-primary">@movie.Duration min</span>
+									<span class="badge bg-@(movie.Status?.StatusName == "Now Showing" ? "success" : "warning")">@movie.Status?.StatusName</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="card-body">
+						<h5 class="card-title fw-bold text-truncate">@movie.Title</h5>
+						<p class="card-text text-muted small mb-0">
+							<i class="bi bi-person-fill"></i> @(movie.Director != null ? movie.Director.DirectorName : "Unknown Director")
+						</p>
+						<p class="card-text small mb-2">
+							<i class="bi bi-calendar-event"></i> @(movie.ReleaseDate.HasValue ? movie.ReleaseDate.Value.ToString("MMM dd, yyyy") : "TBA")
+						</p>
+						<p class="card-text small mb-2">
+							<i class="bi bi-tag"></i>
+							@(movie.MovieGenres != null && movie.MovieGenres.Any()
+														? string.Join(", ", movie.MovieGenres.Select(g => g.Genre.GenreName))
+														: "Not Categorized")
+						</p>
+						<div class="d-grid gap-2 mt-auto">
+							<a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-outline-primary btn-sm">View Details</a>
+							@if (movie.StatusId == 1) // Now Showing
+							{
+								<a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">Book Tickets</a>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+
+	<!-- Empty State -->
+	<div id="emptyState" class="text-center p-5 @(Model.Movies.Count == 0 ? "" : "d-none")">
+		<i class="bi bi-film" style="font-size: 3rem; color: #ccc;"></i>
+		<h3 class="mt-3">No movies found</h3>
+		<p class="text-muted">Try adjusting your search or genre filter</p>
+		<button id="resetFilters" class="btn btn-outline-primary mt-2">Reset Filters</button>
+	</div>
+
+	<!-- Back to Home -->
+	<div class="text-center mt-5">
+		<a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+			<i class="bi bi-arrow-left"></i> Back to Home
+		</a>
+	</div>
+</div>
+
+<link rel="stylesheet" href="~/css/movie-list-site.css" />
+
+@section Scripts {
+	<script>
+		$(document).ready(function() {
+			// Sorting functionality
+			$('.sort-btn').click(function() {
+				$('.sort-btn').removeClass('active');
+				$(this).addClass('active');
+
+				const sortBy = $(this).data('sort');
+				const $movies = $('.movie-item').toArray();
+
+				// Sort the movies
+				$movies.sort(function(a, b) {
+					if (sortBy === 'title') {
+						return $(a).data('title').localeCompare($(b).data('title'));
+					}
+					else if (sortBy === 'title-desc') {
+						return $(b).data('title').localeCompare($(a).data('title'));
+					}
+					else if (sortBy === 'release-new') {
+						return $(b).data('release') - $(a).data('release');
+					}
+					else if (sortBy === 'release-old') {
+						return $(a).data('release') - $(b).data('release');
+					}
+					else if (sortBy === 'duration-long') {
+						return $(b).data('duration') - $(a).data('duration');
+					}
+					else if (sortBy === 'duration-short') {
+						return $(a).data('duration') - $(b).data('duration');
+					}
+				});
+
+				// Re-append in the new order
+				$.each($movies, function(idx, item) {
+					$('#moviesContainer').append(item);
+				});
+			});
+
+			// Genre filtering
+			$('.genre-filter').click(function() {
+				$('.genre-filter').removeClass('active');
+				$(this).addClass('active');
+
+				filterMovies();
+			});
+
+			// Search functionality
+			$('#searchInput').on('input', function() {
+				filterMovies();
+			});
+
+			function filterMovies() {
+				const genreId = $('.genre-filter.active').data('genre').toString();
+				const searchQuery = $('#searchInput').val().toLowerCase();
+				let visibleCount = 0;
+
+				$('.movie-item').each(function() {
+					const $movie = $(this);
+					let visible = true;
+
+					// Genre filter
+					if (genreId && genreId !== '') {
+						const genres = $movie.data('genres').toString().split(',');
+						if (!genres.includes(genreId)) {
+							visible = false;
+						}
+					}
+
+					// Search query
+					if (searchQuery && searchQuery !== '') {
+						const title = $movie.data('title');
+						const director = $movie.find('.card-text').eq(0).text().toLowerCase();
+						const genres = $movie.find('.card-text').eq(2).text().toLowerCase();
+
+						if (!title.includes(searchQuery) &&
+							!director.includes(searchQuery) &&
+							!genres.includes(searchQuery)) {
+							visible = false;
+						}
+					}
+
+					// Show/hide based on filters
+					if (visible) {
+						$movie.removeClass('d-none');
+						visibleCount++;
+					} else {
+						$movie.addClass('d-none');
+					}
+				});
+
+				// Show/hide empty state
+				if (visibleCount === 0) {
+					$('#emptyState').removeClass('d-none');
+				} else {
+					$('#emptyState').addClass('d-none');
+				}
+			}
+
+			// Reset filters
+			$('#resetFilters').click(function() {
+				$('#searchInput').val('');
+				$('.genre-filter').removeClass('active');
+				$('.genre-filter[data-genre=""]').addClass('active');
+				$('.movie-item').removeClass('d-none');
+				$('#emptyState').addClass('d-none');
+			});
+		});
+	</script>
+}

@@ -144,6 +144,14 @@ namespace MovieTheatreManagement.Areas.Identity.Pages.Account
 
             if(!ModelState.IsValid)
             {
+                Input = new()
+                {
+                    RoleList = _roleManager.Roles.Select(r => new SelectListItem()
+                    {
+                        Text = r.Name,
+                        Value = r.Name
+                    })
+                };
                 return Page();
             }
 

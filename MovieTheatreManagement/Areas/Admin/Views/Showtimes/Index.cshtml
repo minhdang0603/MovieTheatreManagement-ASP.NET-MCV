@@ -48,10 +48,10 @@
 						</td>
 						<td class="text-center">
 							<div class="btn-group">
-								<a asp-action="Upsert" asp-route-id="@item.ShowtimeId" class="btn btn-warning">
+								<a asp-action="Upsert" asp-route-id="@item.ShowtimeId" class="btn btn-warning @(item.StartTime <= DateTime.Now ? "disabled" : "")">
 									<i class="bi bi-pencil-square"></i> Edit
 								</a>
-								<a onClick="Delete('/admin/showtimes/delete/@item.ShowtimeId')" class="btn btn-danger">
+								<a onClick="Delete('/admin/showtimes/delete/@item.ShowtimeId')" class="btn btn-danger @(item.StartTime <= DateTime.Now ? "disabled" : "")">
 									<i class="bi bi-trash"></i> Delete
 								</a>
 							</div>

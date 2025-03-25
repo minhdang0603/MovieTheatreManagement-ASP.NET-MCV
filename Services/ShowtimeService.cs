@@ -92,14 +92,15 @@ namespace Services
 				.ToList();
 		}
 
-		public List<Showtime> GetShowtimeListByMovieId(int movieId)
-		{
-			return _context.Showtimes
-				.Include(s => s.Room)
-				.Where(s => s.MovieId == movieId && s.StartTime > DateTime.Now)
-				.OrderBy(s => s.StartTime)
-				.ToList();
-		}
+        public List<Showtime> GetShowtimeListByMovieId(int movieId)
+        {
+            DateTime fiveDaysFromNow = DateTime.Now.AddDays(5);
+            return _context.Showtimes
+                .Include(s => s.Room)
+                .Where(s => s.MovieId == movieId && s.StartTime > DateTime.Now && s.StartTime <= fiveDaysFromNow)
+                .OrderBy(s => s.StartTime)
+                .ToList();
+        }
 
 		public void RemoveShowtime(Showtime showtime)
 		{
@@ -167,6 +168,12 @@ namespace Services
 					}
 				}
 			}
+
+			if (possibleShowtimes.Count == 0)
+			{
+                result.ErrorMessages.Add("No possible show time on the selected day.");
+                return result;
+            }
 
 			// Filter out past dates
 			possibleShowtimes = possibleShowtimes.Where(s => s > DateTime.Now).ToList();

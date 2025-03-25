@@ -9,7 +9,7 @@
             </div>
         </div>
 
-        <div class="row gap-section">
+        <div class="row gap-section mb-4">
             @foreach (var movie in Model)
             {
                 <div class="col-lg-3 col-md-6">
@@ -50,6 +50,9 @@
                     </div>
                 </div>
             }
+        </div>
+        <div class="text-center">
+            <a asp-controller="Movie" asp-area="Customer" asp-route-statusId="1" class="btn btn-outline-primary">View All</a>
         </div>
     </div>
 </section>

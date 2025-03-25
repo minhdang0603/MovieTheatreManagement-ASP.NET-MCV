@@ -1,0 +1,46 @@
+﻿@model Movie
+
+<div class="col-xl-3 col-lg-4 col-md-6 movie-item"
+	 data-title="@Model.Title.ToLower()"
+	 data-release="@(Model.ReleaseDate?.ToString("yyyyMMdd") ?? "0")"
+	 data-duration="@Model.Duration"
+	 data-genres="@(string.Join(",", Model.MovieGenres?.Select(mg => mg.GenreId) ?? new List<int>()))">
+
+	<div class="card h-100 movie-card shadow-sm">
+		<div class="position-relative">
+			<img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/api/placeholder/400/600" : Model.ImageUrl)"
+				 class="card-img-top movie-card-image"
+				 alt="@Model.Title" />
+			<div class="movie-overlay">
+				<div class="w-100">
+					<div class="movie-badge-container">
+						<span class="badge bg-primary">@Model.Duration min</span>
+						<span class="badge bg-@(Model.Status?.StatusName == "Now Showing" ? "success" : "warning")">@Model.Status?.StatusName</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="card-body">
+			<h5 class="card-title fw-bold text-truncate">@Model.Title</h5>
+			<p class="card-text text-muted small mb-0">
+				<i class="bi bi-person-fill"></i> @(Model.Director != null ? Model.Director.DirectorName : "Unknown Director")
+			</p>
+			<p class="card-text small mb-2">
+				<i class="bi bi-calendar-event"></i> @(Model.ReleaseDate.HasValue ? Model.ReleaseDate.Value.ToString("MMM dd, yyyy") : "TBA")
+			</p>
+			<p class="card-text small mb-2">
+				<i class="bi bi-tag"></i>
+				@(Model.MovieGenres != null && Model.MovieGenres.Any()
+								? string.Join(", ", Model.MovieGenres.Select(g => g.Genre.GenreName))
+								: "Not Categorized")
+			</p>
+			<div class="d-grid gap-2 mt-auto">
+				<a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@Model.MovieId" class="btn btn-outline-primary btn-sm">View Details</a>
+				@if (Model.StatusId == 1) // Now Showing
+				{
+					<a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@Model.MovieId" class="btn btn-primary btn-sm">Book Tickets</a>
+				}
+			</div>
+		</div>
+	</div>
+</div>

@@ -70,7 +70,7 @@
                                 @foreach (var room in Model.RoomList)
                                 {
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="selectedRooms" value="@room.Value" id="room-@room.Value" />
+                                        <input class="form-check-input" type="checkbox" name="preferredRoomIds" value="@room.Value" id="room-@room.Value" />
                                         <label class="form-check-label" for="room-@room.Value">@room.Text</label>
                                     </div>
                                 }
@@ -176,7 +176,7 @@
                 const endDate = $('#EndDate').val();
                 const selectedDays = $('input[name="selectedDays"]:checked').length;
                 const timeSlots = $('.time-slot-badge').length;
-                const selectedRooms = $('input[name="selectedRooms"]:checked').length;
+                const selectedRooms = $('input[name="preferredRoomIds"]:checked').length;
 
                 let isValid = true;
 
