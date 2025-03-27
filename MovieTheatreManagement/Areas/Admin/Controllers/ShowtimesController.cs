@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Models;
 using Models.ViewModels;
+using Newtonsoft.Json;
 using Services.IService;
 using Utility;
 
@@ -14,6 +15,13 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
     {
 
         private readonly IUnitOfWork _unitOfWork;
+
+        public const int ITEMS_PER_PAGE = 5;
+
+        [BindProperty(SupportsGet = true, Name = "page")]
+        public int currentPage { get; set; }
+
+        public int countPages { get; set; }
 
         public ShowtimesController(IUnitOfWork unitOfWork)
         {
@@ -153,10 +161,16 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
                 var result = _unitOfWork.Showtime.CreateBatchShowtimes(batchVM);
 
                 // Save the results for the results page
-                batchVM.SuccessCount = result.CreatedShowtimes.Count;
-                batchVM.FailureCount = result.ErrorMessages.Count;
-                batchVM.ErrorMessages = result.ErrorMessages;
-                batchVM.CreatedShowtimes = result.CreatedShowtimes;
+                TempData["SuccessCount"] = result.CreatedShowtimes.Count;
+                TempData["FailureCount"] = result.ErrorMessages.Count;
+
+                // For complex objects, serialize to JSON
+                TempData["ErrorMessages"] = JsonConvert.SerializeObject(result.ErrorMessages);
+
+                // Store the IDs of created showtimes rather than the whole objects
+                TempData["CreatedShowtimeIds"] = JsonConvert.SerializeObject(
+                    result.CreatedShowtimes.Select(s => s.ShowtimeId).ToList());
+
 
                 if (result.CreatedShowtimes.Count > 0)
                 {
@@ -167,25 +181,47 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
                 {
                     TempData["error"] = $"Failed to create {result.ErrorMessages.Count} showtimes. See details for more information.";
                 }
-                return RedirectToAction(nameof(BatchCreateResults), batchVM);
+                return RedirectToAction(nameof(BatchCreateResults));
             }
             catch (Exception ex)
             {
                 batchVM.ErrorMessages.Add($"An error occurred: {ex.Message}");
                 TempData["error"] = "An error occurred during batch creation.";
-                return RedirectToAction(nameof(Index));
+                return View(batchVM);
             }
 
         }
 
-        public IActionResult BatchCreateResults(BatchShowtimeVM batchVM)
+        public IActionResult BatchCreateResults()
         {
-            if (batchVM is null)
+            if (TempData["SuccessCount"] == null && TempData["FailureCount"] == null)
             {
                 return RedirectToAction(nameof(BatchCreate));
             }
 
+            var batchVM = new BatchShowtimeVM();
+
+            // Retrieve data from TempData
+            batchVM.SuccessCount = (int)TempData["SuccessCount"];
+            batchVM.FailureCount = (int)TempData["FailureCount"];
+
+            // Deserialize complex objects
+            if (TempData["ErrorMessages"] != null)
+            {
+                batchVM.ErrorMessages = JsonConvert.DeserializeObject<List<string>>(TempData["ErrorMessages"].ToString());
+            }
+
+            // Fetch showtimes by ID
+            if (TempData["CreatedShowtimeIds"] != null)
+            {
+                var showtimeIds = JsonConvert.DeserializeObject<List<int>>(TempData["CreatedShowtimeIds"].ToString());
+                batchVM.CreatedShowtimes = _unitOfWork.Showtime.GetShowtimeList()
+                    .Where(s => showtimeIds.Contains(s.ShowtimeId))
+                    .ToList();
+            }
+
             return View(batchVM);
+
         }
 
         #region API CALLS

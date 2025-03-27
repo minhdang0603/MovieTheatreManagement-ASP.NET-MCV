@@ -171,9 +171,9 @@ namespace Services
 
 			if (possibleShowtimes.Count == 0)
 			{
-                result.ErrorMessages.Add("No possible show time on the selected day.");
-                return result;
-            }
+				result.ErrorMessages.Add("No possible show time on the selected day.");
+				return result;
+			}
 
 			// Filter out past dates
 			possibleShowtimes = possibleShowtimes.Where(s => s > DateTime.Now).ToList();
@@ -235,5 +235,7 @@ namespace Services
 
 			return result;
 		}
+
+
 	}
 }
