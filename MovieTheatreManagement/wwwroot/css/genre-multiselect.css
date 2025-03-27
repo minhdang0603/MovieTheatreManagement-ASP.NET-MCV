@@ -1,0 +1,195 @@
+﻿/* Genre Multiselect Component Styles
+ * A modern, user-friendly multiselect dropdown for genre selection
+ */
+
+/* Container styles */
+.genre-multiselect-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Header/Input area styles */
+.genre-multiselect-header {
+    display: flex;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    background-color: #fff;
+    min-height: 38px;
+    cursor: pointer;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+    .genre-multiselect-header:hover {
+        border-color: #adb5bd;
+    }
+
+    .genre-multiselect-header:focus-within {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+/* Container for selected genre pills */
+.genre-pills-container {
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    gap: 5px;
+    align-items: center;
+}
+
+/* Individual genre pill */
+.genre-pill {
+    display: flex;
+    align-items: center;
+    background-color: #e9ecef;
+    border-radius: 16px;
+    padding: 2px 8px;
+    font-size: 0.875rem;
+    margin-right: 3px;
+    transition: background-color 0.2s;
+}
+
+    .genre-pill:hover {
+        background-color: #dee2e6;
+    }
+
+/* Remove button for pills */
+.genre-pill-remove {
+    background: none;
+    border: none;
+    font-size: 18px;
+    line-height: 0.5;
+    padding: 0;
+    margin-left: 5px;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+    .genre-pill-remove:hover {
+        color: #dc3545;
+    }
+
+/* Filter input within the header */
+.genre-filter-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    min-width: 50px;
+    background: transparent;
+}
+
+/* Toggle button area */
+.genre-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
+    color: #6c757d;
+}
+
+/* Dropdown container */
+.genre-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-top: 5px;
+    z-index: 1000;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    display: none;
+}
+
+    .genre-dropdown.show {
+        display: block;
+    }
+
+/* Search area in dropdown */
+.genre-dropdown-search {
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Container for the genre options */
+.genre-options {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Individual genre option */
+.genre-option {
+    display: flex;
+    align-items: center;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+    .genre-option:hover {
+        background-color: #f8f9fa;
+    }
+
+    .genre-option.selected {
+        background-color: #e9f0ff;
+    }
+
+/* Checkbox area in options */
+.genre-checkbox {
+    margin-right: 10px;
+    color: #6c757d;
+}
+
+.genre-option.selected .genre-checkbox {
+    color: #0d6efd;
+}
+
+/* Label area in options */
+.genre-label {
+    flex: 1;
+}
+
+/* Footer with action buttons */
+.genre-dropdown-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Scrollbar customization for the options container */
+.genre-options::-webkit-scrollbar {
+    width: 8px;
+}
+
+.genre-options::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.genre-options::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+    .genre-options::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+/* Focus states for accessibility */
+.genre-option:focus {
+    outline: none;
+    background-color: #f0f7ff;
+}
+
+.genre-option.selected:focus {
+    background-color: #d9e8ff;
+}
+
+/* Empty state styling */
+.genre-multiselect-header.empty .genre-filter-input::placeholder {
+    color: #6c757d;
+}

@@ -1,68 +1,146 @@
-﻿@model List<Showtime>
+﻿@model ShowtimeIndexVM
 
 @{
-	ViewData["Title"] = "Showtimes";
+    ViewData["Title"] = "Showtimes";
 }
 
 <div class="container mt-4">
-	<h1 class="text-center text-primary">Showtime List</h1>
+    <h1 class="text-center text-primary">Showtime List</h1>
 
-	<div class="d-flex justify-content-between mb-3">
-		<a asp-action="upsert" class="btn btn-success">
-			<i class="bi bi-plus-circle"></i> Create New
-		</a>
-		<a asp-action="BatchCreate" class="btn btn-primary">
-			<i class="bi bi-collection"></i> Batch Create
-		</a>
-	</div>
+    <div class="d-flex justify-content-between mb-3">
+        <a asp-action="upsert" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Create New
+        </a>
+        <a asp-action="BatchCreate" class="btn btn-primary">
+            <i class="bi bi-collection"></i> Batch Create
+        </a>
+    </div>
 
-	@if (Model.Count == 0)
-	{
-		<div class="alert alert-warning" role="alert">
-			No showtimes found.
-		</div>
-	}
-	else
-	{
-		<table class="table table-striped table-hover">
-			<thead class="table-dark">
-				<tr>
-					<th class="text-center">Movie</th>
-					<th class="text-center">Room</th>
-					<th class="text-center">Start Time</th>
-					<th class="text-center">Actions</th>
-				</tr>
-			</thead>
-			<tbody>
-				@foreach (var item in Model)
-				{
-					<tr>
-						<td class="text-center">
-							@(item.Movie?.Title ?? "N/A")
-						</td>
-						<td class="text-center">
-							@(item.Room?.Name ?? "N/A")
-						</td>
-						<td class="text-center">
-							@item.StartTime.ToString("yyyy-MM-dd HH:mm")
-						</td>
-						<td class="text-center">
-							<div class="btn-group">
-								<a asp-action="Upsert" asp-route-id="@item.ShowtimeId" class="btn btn-warning @(item.StartTime <= DateTime.Now ? "disabled" : "")">
-									<i class="bi bi-pencil-square"></i> Edit
-								</a>
-								<a onClick="Delete('/admin/showtimes/delete/@item.ShowtimeId')" class="btn btn-danger @(item.StartTime <= DateTime.Now ? "disabled" : "")">
-									<i class="bi bi-trash"></i> Delete
-								</a>
-							</div>
-						</td>
-					</tr>
-				}
-			</tbody>
-		</table>
-	}
+    <!-- Filter Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Showtimes</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Index" method="get" id="filterForm">
+                <div class="row g-3">
+                    <!-- Search Term -->
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input asp-for="SearchTerm" class="form-control" placeholder="Search by movie or room...">
+                        </div>
+                    </div>
+
+                    <!-- Movie Dropdown -->
+                    <div class="col-md-6">
+                        <select asp-for="MovieId" class="form-select" asp-items="Model.MovieList">
+                            <option value="">-- All Movies --</option>
+                        </select>
+                    </div>
+
+                    <!-- Room Dropdown -->
+                    <div class="col-md-4">
+                        <select asp-for="RoomId" class="form-select" asp-items="Model.RoomList">
+                            <option value="">-- All Rooms --</option>
+                        </select>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text">From</span>
+                            <input asp-for="StartDate" class="form-control" type="date">
+                        </div>
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text">To</span>
+                            <input asp-for="EndDate" class="form-control" type="date">
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-filter"></i> Apply Filters
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hidden page input to reset to page 1 when filtering -->
+                <input type="hidden" name="page" value="1" />
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Showtimes.Count == 0)
+    {
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> No showtimes found matching your criteria.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-center">Movie</th>
+                    <th class="text-center">Room</th>
+                    <th class="text-center">Start Time</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Showtimes)
+                {
+                    <tr>
+                        <td class="text-center">
+                            @(item.Movie?.Title ?? "N/A")
+                        </td>
+                        <td class="text-center">
+                            @(item.Room?.Name ?? "N/A")
+                        </td>
+                        <td class="text-center">
+                            @item.StartTime.ToString("yyyy-MM-dd HH:mm")
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a asp-action="Upsert" asp-route-id="@item.ShowtimeId" class="btn btn-warning @(item.StartTime <= DateTime.Now ? "disabled" : "")">
+                                    <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <a onClick="Delete('/admin/showtimes/delete/@item.ShowtimeId')" class="btn btn-danger @(item.StartTime <= DateTime.Now ? "disabled" : "")" style="cursor: pointer">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <partial name="_Paging" model="Model.PaginationInfo" />
+    }
 </div>
 
 @section Scripts {
-	<script src="~/js/deletedConfirmation.js"></script>
+    <script src="~/js/deletedConfirmation.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Format date inputs properly
+            $('input[type="date"]').each(function() {
+                if ($(this).val()) {
+                    const date = new Date($(this).val());
+                    const formattedDate = date.toISOString().split('T')[0];
+                    $(this).val(formattedDate);
+                }
+            });
+        });
+    </script>
 }

@@ -30,9 +30,14 @@
 				</div>
 
 				<!-- Description -->
-				<div class="mb-3 form-floating">
-					<textarea asp-for="Movie.Description" class="form-control border-0 shadow" rows="3" placeholder=""></textarea>
-					<label asp-for="Movie.Description" class="form-label"></label>
+				<div class="mb-4">
+					<label asp-for="Movie.Description" class="form-label">Movie Description</label>
+					<textarea asp-for="Movie.Description" class="form-control border-0 shadow"
+							  rows="6" placeholder="Enter a compelling description of the movie..."
+							  maxlength="500" id="movieDescription"></textarea>
+					<div class="d-flex justify-content-end mt-1">
+						<span class="text-muted small" id="descriptionCounter">0/500 characters</span>
+					</div>
 					<span asp-validation-for="Movie.Description" class="text-danger"></span>
 				</div>
 
@@ -61,22 +66,56 @@
 					<span asp-validation-for="Movie.StatusId" class="text-danger"></span>
 				</div>
 
-				<!-- Genres (Checkboxes) -->
+				<!-- Genres (Multi-select Dropdown) -->
 				<div class="mb-3">
 					<label class="form-label">Genres</label>
-					<div>
-						@foreach (var genre in Model.GenreList)
-						{
-							<div class="form-check form-check-inline">
-								<input class="form-check-input" type="checkbox"
-									   name="selectedGenres"
-									   value="@genre.Value"
-								@(Model.Movie.MovieGenres != null &&
-															Model.Movie.MovieGenres.Any(mg => mg.GenreId.ToString() == genre.Value)
-															? "checked" : "") />
-								<label class="form-check-label">@genre.Text</label>
+					<div class="genre-multiselect-container">
+						<div class="genre-multiselect-header">
+							<div class="genre-pills-container">
+								@if (Model.Movie.MovieGenres != null && Model.Movie.MovieGenres.Any())
+								{
+									foreach (var movieGenre in Model.Movie.MovieGenres)
+									{
+										var genreName = Model.GenreList.FirstOrDefault(g => g.Value == movieGenre.GenreId.ToString())?.Text;
+										<div class="genre-pill" data-genre-id="@movieGenre.GenreId">
+											<span>@genreName</span>
+											<button type="button" class="genre-pill-remove">&times;</button>
+										</div>
+									}
+								}
+								<input type="text" id="genreFilterInput" class="genre-filter-input" placeholder="Search or select genres...">
 							</div>
-						}
+							<div class="genre-dropdown-toggle">
+								<i class="bi bi-chevron-down"></i>
+							</div>
+						</div>
+						<div class="genre-dropdown">
+							<div class="genre-dropdown-search">
+								<input type="text" id="genreSearchInput" class="form-control" placeholder="Search genres...">
+							</div>
+							<div class="genre-options">
+								@foreach (var genre in Model.GenreList)
+								{
+									bool isSelected = Model.Movie.MovieGenres != null &&
+									Model.Movie.MovieGenres.Any(mg => mg.GenreId.ToString() == genre.Value);
+
+									<div class="genre-option @(isSelected ? "selected" : "")" data-genre-id="@genre.Value" data-genre-name="@genre.Text">
+										<div class="genre-checkbox">
+											<i class="bi @(isSelected ? "bi-check-square-fill" : "bi-square")"></i>
+										</div>
+										<div class="genre-label">@genre.Text</div>
+										<input type="checkbox" name="selectedGenres" value="@genre.Value" @(isSelected ? "checked" : "") class="d-none">
+									</div>
+								}
+							</div>
+							@if (Model.GenreList.Count() > 5)
+							{
+								<div class="genre-dropdown-footer">
+									<button type="button" id="clearGenres" class="btn btn-sm btn-outline-secondary">Clear all</button>
+									<button type="button" id="applyGenres" class="btn btn-sm btn-primary">Apply</button>
+								</div>
+							}
+						</div>
 					</div>
 				</div>
 
@@ -116,8 +155,12 @@
 		</div>
 	</div>
 </div>
+
+<link rel="stylesheet" href="~/css/genre-multiselect.css" />
+
 @section Scripts
 {
+	<script src="~/js/genre-multiselect.js"></script>
 	<script>
 		const imgInp = document.getElementById('imgInp');
 
@@ -127,5 +170,33 @@
 				document.querySelector('img').src = URL.createObjectURL(file)
 			}
 		}
+
+		$(document).ready(function() {
+			const descriptionField = $('#movieDescription');
+			const counter = $('#descriptionCounter');
+
+			// Update on page load
+			updateCharacterCount();
+
+			// Update on input
+			descriptionField.on('input', function() {
+				updateCharacterCount();
+			});
+
+			function updateCharacterCount() {
+				const currentLength = descriptionField.val().length;
+				const maxLength = descriptionField.attr('maxlength');
+				counter.text(`${currentLength}/${maxLength} characters`);
+
+				// Change color when approaching limit
+				if (currentLength > maxLength * 0.9) {
+					counter.removeClass('text-muted').addClass('text-danger');
+				} else if (currentLength > maxLength * 0.7) {
+					counter.removeClass('text-muted text-danger').addClass('text-warning');
+				} else {
+					counter.removeClass('text-warning text-danger').addClass('text-muted');
+				}
+			}
+		});
 	</script>
 }

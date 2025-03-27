@@ -19,5 +19,6 @@ namespace Services.IService
 		IEnumerable<Room> GetAvailableRooms(DateTime startTime, int movieId, int? showtimeId);
 		List<int> GetBookedSeats(int showtimeId);
 		BatchShowtimeResult CreateBatchShowtimes(BatchShowtimeVM batchVM);
-	}
+        (List<Showtime> Showtimes, int TotalCount) GetShowtimeListPaginated(string searchTerm, int? movieId, int? roomId, DateTime? startDate, DateTime? endDate, int page, int pageSize);
+    }
 }

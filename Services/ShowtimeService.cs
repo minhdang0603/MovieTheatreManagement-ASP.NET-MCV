@@ -11,86 +11,86 @@ using System.Threading.Tasks;
 
 namespace Services
 {
-	public class ShowtimeService : IShowtimeService
-	{
-		private readonly ApplicationDbContext _context;
+    public class ShowtimeService : IShowtimeService
+    {
+        private readonly ApplicationDbContext _context;
 
-		public ShowtimeService(ApplicationDbContext context)
-		{
-			_context = context;
-		}
+        public ShowtimeService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-		public void AddShowtime(Showtime showtime)
-		{
-			_context.Showtimes.Add(showtime);
-		}
+        public void AddShowtime(Showtime showtime)
+        {
+            _context.Showtimes.Add(showtime);
+        }
 
-		public IEnumerable<Room> GetAvailableRooms(DateTime startTime, int movieId, int? showtimeId)
-		{
-			var movie = _context.Movies.FirstOrDefault(m => m.MovieId == movieId);
-			if (movie == null)
-				throw new Exception("Movie not found");
+        public IEnumerable<Room> GetAvailableRooms(DateTime startTime, int movieId, int? showtimeId)
+        {
+            var movie = _context.Movies.FirstOrDefault(m => m.MovieId == movieId);
+            if (movie == null)
+                throw new Exception("Movie not found");
 
-			DateTime endTime = startTime.AddMinutes(movie.Duration);
+            DateTime endTime = startTime.AddMinutes(movie.Duration);
 
-			var allRooms = _context.Rooms.ToList();
+            var allRooms = _context.Rooms.ToList();
 
-			var existingShowtimes = _context.Showtimes
-				.Include(s => s.Movie)
-				.Where(s => s.ShowtimeId != (showtimeId ?? 0))
-				.ToList();
+            var existingShowtimes = _context.Showtimes
+                .Include(s => s.Movie)
+                .Where(s => s.ShowtimeId != (showtimeId ?? 0))
+                .ToList();
 
-			var availableRooms = allRooms.Where(room =>
-			{
-				foreach (var showtime in existingShowtimes.Where(s => s.RoomId == room.RoomId))
-				{
-					if (showtime.Movie == null) continue;
+            var availableRooms = allRooms.Where(room =>
+            {
+                foreach (var showtime in existingShowtimes.Where(s => s.RoomId == room.RoomId))
+                {
+                    if (showtime.Movie == null) continue;
 
-					var existingEndTime = showtime.StartTime.AddMinutes(showtime.Movie.Duration);
-					var bufferStartTime = showtime.StartTime.AddMinutes(-10);
-					var bufferEndTime = existingEndTime.AddMinutes(10);
+                    var existingEndTime = showtime.StartTime.AddMinutes(showtime.Movie.Duration);
+                    var bufferStartTime = showtime.StartTime.AddMinutes(-10);
+                    var bufferEndTime = existingEndTime.AddMinutes(10);
 
-					if ((startTime >= bufferStartTime && startTime <= bufferEndTime) ||
-						(endTime >= bufferStartTime && endTime <= bufferEndTime) ||
-						(startTime <= bufferStartTime && endTime >= bufferEndTime))
-					{
-						// This room has a conflict
-						return false;
-					}
-				}
-				return true;
-			});
+                    if ((startTime >= bufferStartTime && startTime <= bufferEndTime) ||
+                        (endTime >= bufferStartTime && endTime <= bufferEndTime) ||
+                        (startTime <= bufferStartTime && endTime >= bufferEndTime))
+                    {
+                        // This room has a conflict
+                        return false;
+                    }
+                }
+                return true;
+            });
 
-			return availableRooms;
-		}
+            return availableRooms;
+        }
 
-		public List<int> GetBookedSeats(int showtimeId)
-		{
-			return _context.Bookings
-				.Where(b => b.ShowtimeId == showtimeId && b.Status != "cancelled")
-				.SelectMany(b => b.Tickets)
-				.Select(t => t.SeatId ?? 0)
-				.Where(id => id != 0)
-				.ToList();
-		}
+        public List<int> GetBookedSeats(int showtimeId)
+        {
+            return _context.Bookings
+                .Where(b => b.ShowtimeId == showtimeId && b.Status != "cancelled")
+                .SelectMany(b => b.Tickets)
+                .Select(t => t.SeatId ?? 0)
+                .Where(id => id != 0)
+                .ToList();
+        }
 
-		public Showtime GetShowtimeById(int id)
-		{
-			return _context.Showtimes
-				.Include(s => s.Movie)
-				.Include(s => s.Room)
-				.FirstOrDefault(s => s.ShowtimeId == id);
-		}
+        public Showtime GetShowtimeById(int id)
+        {
+            return _context.Showtimes
+                .Include(s => s.Movie)
+                .Include(s => s.Room)
+                .FirstOrDefault(s => s.ShowtimeId == id);
+        }
 
-		public List<Showtime> GetShowtimeList()
-		{
-			return _context.Showtimes
-				.Include(s => s.Movie)
-				.Include(s => s.Room)
-				.Where(s => s.StartTime >= DateTime.Now)
-				.OrderBy(s => s.StartTime)
-				.ToList();
-		}
+        public List<Showtime> GetShowtimeList()
+        {
+            return _context.Showtimes
+                .Include(s => s.Movie)
+                .Include(s => s.Room)
+                .Where(s => s.StartTime >= DateTime.Now)
+                .OrderBy(s => s.StartTime)
+                .ToList();
+        }
 
         public List<Showtime> GetShowtimeListByMovieId(int movieId)
         {
@@ -102,140 +102,192 @@ namespace Services
                 .ToList();
         }
 
-		public void RemoveShowtime(Showtime showtime)
-		{
-			_context.Showtimes.Remove(showtime);
-		}
+        public void RemoveShowtime(Showtime showtime)
+        {
+            _context.Showtimes.Remove(showtime);
+        }
 
-		public void UpdateShowtime(Showtime showtime)
-		{
-			var oldShowtime = _context.Showtimes.FirstOrDefault(s => s.ShowtimeId == showtime.ShowtimeId);
-			if (oldShowtime == null)
-				throw new Exception("Showtime not found");
+        public void UpdateShowtime(Showtime showtime)
+        {
+            var oldShowtime = _context.Showtimes.FirstOrDefault(s => s.ShowtimeId == showtime.ShowtimeId);
+            if (oldShowtime == null)
+                throw new Exception("Showtime not found");
 
-			oldShowtime.MovieId = showtime.MovieId;
-			oldShowtime.RoomId = showtime.RoomId;
-			oldShowtime.StartTime = showtime.StartTime;
+            oldShowtime.MovieId = showtime.MovieId;
+            oldShowtime.RoomId = showtime.RoomId;
+            oldShowtime.StartTime = showtime.StartTime;
 
-			_context.Showtimes.Update(oldShowtime);
-		}
+            _context.Showtimes.Update(oldShowtime);
+        }
 
-		public BatchShowtimeResult CreateBatchShowtimes(BatchShowtimeVM batchVM)
-		{
-			var result = new BatchShowtimeResult();
-			var movie = _context.Movies.Find(batchVM.MovieId);
+        public BatchShowtimeResult CreateBatchShowtimes(BatchShowtimeVM batchVM)
+        {
+            var result = new BatchShowtimeResult();
+            var movie = _context.Movies.Find(batchVM.MovieId);
 
-			if (movie == null)
-			{
-				result.ErrorMessages.Add("Movie not found.");
-				return result;
-			}
+            if (movie == null)
+            {
+                result.ErrorMessages.Add("Movie not found.");
+                return result;
+            }
 
-			// Validate dates
-			if (batchVM.StartDate > batchVM.EndDate)
-			{
-				result.ErrorMessages.Add("Start date must be before end date.");
-				return result;
-			}
+            // Validate dates
+            if (batchVM.StartDate > batchVM.EndDate)
+            {
+                result.ErrorMessages.Add("Start date must be before end date.");
+                return result;
+            }
 
-			if (batchVM.SelectedDays.Count == 0)
-			{
-				result.ErrorMessages.Add("No days selected.");
-				return result;
-			}
+            if (batchVM.SelectedDays.Count == 0)
+            {
+                result.ErrorMessages.Add("No days selected.");
+                return result;
+            }
 
-			if (batchVM.TimeSlots.Count == 0)
-			{
-				result.ErrorMessages.Add("No time slots selected.");
-				return result;
-			}
+            if (batchVM.TimeSlots.Count == 0)
+            {
+                result.ErrorMessages.Add("No time slots selected.");
+                return result;
+            }
 
-			if (batchVM.PreferredRoomIds.Count == 0)
-			{
-				result.ErrorMessages.Add("No rooms selected.");
-				return result;
-			}
+            if (batchVM.PreferredRoomIds.Count == 0)
+            {
+                result.ErrorMessages.Add("No rooms selected.");
+                return result;
+            }
 
-			// Generate all possible showtimes based on the criteria
-			var possibleShowtimes = new List<DateTime>();
-			for (var date = batchVM.StartDate.Date; date <= batchVM.EndDate.Date; date = date.AddDays(1))
-			{
-				if (batchVM.SelectedDays.Contains(date.DayOfWeek))
-				{
-					foreach (var timeSlot in batchVM.TimeSlots)
-					{
-						possibleShowtimes.Add(date.Add(timeSlot));
-					}
-				}
-			}
+            // Generate all possible showtimes based on the criteria
+            var possibleShowtimes = new List<DateTime>();
+            for (var date = batchVM.StartDate.Date; date <= batchVM.EndDate.Date; date = date.AddDays(1))
+            {
+                if (batchVM.SelectedDays.Contains(date.DayOfWeek))
+                {
+                    foreach (var timeSlot in batchVM.TimeSlots)
+                    {
+                        possibleShowtimes.Add(date.Add(timeSlot));
+                    }
+                }
+            }
 
-			if (possibleShowtimes.Count == 0)
-			{
-				result.ErrorMessages.Add("No possible show time on the selected day.");
-				return result;
-			}
+            if (possibleShowtimes.Count == 0)
+            {
+                result.ErrorMessages.Add("No possible show time on the selected day.");
+                return result;
+            }
 
-			// Filter out past dates
-			possibleShowtimes = possibleShowtimes.Where(s => s > DateTime.Now).ToList();
+            // Filter out past dates
+            possibleShowtimes = possibleShowtimes.Where(s => s > DateTime.Now).ToList();
 
-			// Create showtimes
-			foreach (var startTime in possibleShowtimes)
-			{
-				bool showtimeCreated = false;
+            // Create showtimes
+            foreach (var startTime in possibleShowtimes)
+            {
+                bool showtimeCreated = false;
 
-				// Try each preferred room until one works
-				foreach (var roomId in batchVM.PreferredRoomIds)
-				{
-					// Only try other rooms if auto-resolve is enabled or this is the first preferred room
-					if (!batchVM.AutoResolveConflicts && roomId != batchVM.PreferredRoomIds.First())
-					{
-						break;
-					}
+                // Try each preferred room until one works
+                foreach (var roomId in batchVM.PreferredRoomIds)
+                {
+                    // Only try other rooms if auto-resolve is enabled or this is the first preferred room
+                    if (!batchVM.AutoResolveConflicts && roomId != batchVM.PreferredRoomIds.First())
+                    {
+                        break;
+                    }
 
-					try
-					{
-						var availableRooms = GetAvailableRooms(startTime, batchVM.MovieId, null);
-						if (availableRooms.Any(r => r.RoomId == roomId))
-						{
-							// Create the showtime
-							var showtime = new Showtime
-							{
-								MovieId = batchVM.MovieId,
-								RoomId = roomId,
-								StartTime = startTime
-							};
+                    try
+                    {
+                        var availableRooms = GetAvailableRooms(startTime, batchVM.MovieId, null);
+                        if (availableRooms.Any(r => r.RoomId == roomId))
+                        {
+                            // Create the showtime
+                            var showtime = new Showtime
+                            {
+                                MovieId = batchVM.MovieId,
+                                RoomId = roomId,
+                                StartTime = startTime
+                            };
 
-							_context.Showtimes.Add(showtime);
-							_context.SaveChanges();
+                            _context.Showtimes.Add(showtime);
+                            _context.SaveChanges();
 
-							// Load related entities for display
-							_context.Entry(showtime).Reference(s => s.Movie).Load();
-							_context.Entry(showtime).Reference(s => s.Room).Load();
+                            // Load related entities for display
+                            _context.Entry(showtime).Reference(s => s.Movie).Load();
+                            _context.Entry(showtime).Reference(s => s.Room).Load();
 
-							result.CreatedShowtimes.Add(showtime);
-							showtimeCreated = true;
-							break;
-						}
-					}
-					catch (Exception ex)
-					{
-						// Continue to the next room
-					}
-				}
+                            result.CreatedShowtimes.Add(showtime);
+                            showtimeCreated = true;
+                            break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Continue to the next room
+                    }
+                }
 
-				if (!showtimeCreated)
-				{
-					var roomNames = string.Join(", ", _context.Rooms
-						.Where(r => batchVM.PreferredRoomIds.Contains(r.RoomId))
-						.Select(r => r.Name));
+                if (!showtimeCreated)
+                {
+                    var roomNames = string.Join(", ", _context.Rooms
+                        .Where(r => batchVM.PreferredRoomIds.Contains(r.RoomId))
+                        .Select(r => r.Name));
 
-					result.ErrorMessages.Add($"Could not create showtime for {startTime:yyyy-MM-dd HH:mm}. No available rooms among: {roomNames}");
-				}
-			}
+                    result.ErrorMessages.Add($"Could not create showtime for {startTime:yyyy-MM-dd HH:mm}. No available rooms among: {roomNames}");
+                }
+            }
 
-			return result;
-		}
+            return result;
+        }
 
+        public (List<Showtime> Showtimes, int TotalCount) GetShowtimeListPaginated(string searchTerm, int? movieId, int? roomId,
+            DateTime? startDate, DateTime? endDate, int page, int pageSize)
+        {
+            var query = _context.Showtimes
+                .Include(s => s.Movie)
+                .Include(s => s.Room)
+                .OrderByDescending(s => s.StartTime)
+                .AsQueryable();
+                //.Where(s => s.StartTime >= DateTime.Now);
 
-	}
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(s =>
+                    (s.Movie.Title != null && s.Movie.Title.ToLower().Contains(searchTerm)) ||
+                    (s.Room.Name != null && s.Room.Name.ToLower().Contains(searchTerm)));
+            }
+
+            if (movieId.HasValue && movieId.Value > 0)
+            {
+                query = query.Where(s => s.MovieId == movieId.Value);
+            }
+
+            if (roomId.HasValue && roomId.Value > 0)
+            {
+                query = query.Where(s => s.RoomId == roomId.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                DateTime start = startDate.Value.Date;
+                query = query.Where(s => s.StartTime >= start);
+            }
+
+            if (endDate.HasValue)
+            {
+                // Add 1 day and subtract 1 second to include the entire end date
+                DateTime end = endDate.Value.Date.AddDays(1).AddSeconds(-1);
+                query = query.Where(s => s.StartTime <= end);
+            }
+
+            // Get total count for pagination before applying pagination
+            int totalCount = query.Count();
+
+            // Order and apply pagination
+            var showtimes = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (showtimes, totalCount);
+        }
+    }
 }
