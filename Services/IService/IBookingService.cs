@@ -13,7 +13,8 @@ namespace Services.IService
 		void CancelBooking(int bookingId);
 		void CreateBooking(Booking booking);
 		Booking GetBookingWithDetails(int bookingId);
-		List<Booking> GetUserBookings(string userId);
+        (List<Booking> Bookings, int TotalCount) GetPagedBookings(string searchTerm, string status, int? movieId, DateTime? startDate, DateTime? endDate, int pageIndex, int pageSize);
+        List<Booking> GetUserBookings(string userId);
 		void RemoveBooking(Booking booking);
 		void UpdateStatus(int bookingId, string status);
 	}

@@ -16,12 +16,9 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public const int ITEMS_PER_PAGE = 10;
+        private const int ITEMS_PER_PAGE = 10;
 
-        [BindProperty(SupportsGet = true, Name = "page")]
-        public int currentPage { get; set; } = 1;
-
-        public int countPages { get; set; }
+        private int countPages { get; set; }
 
         public ShowtimesController(IUnitOfWork unitOfWork)
         {
@@ -30,10 +27,9 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
 
         public IActionResult Index(string searchTerm, int? movieId, int? roomId, DateTime? startDate, DateTime? endDate, int page = 1)
         {
-            page = page < 0 ? 1 : page;
+            page = page < 1 ? 1 : page;
             var result = _unitOfWork.Showtime.GetShowtimeListPaginated(searchTerm, movieId, roomId, startDate, endDate, page, ITEMS_PER_PAGE);
 
-            currentPage = page;
             countPages = (int)Math.Ceiling(result.TotalCount / (double)ITEMS_PER_PAGE);
 
             var viewModel = new ShowtimeIndexVM
@@ -56,7 +52,7 @@ namespace MovieTheatreManagement.Areas.Admin.Controllers
                 }),
                 PaginationInfo = new PaginationVM
                 {
-                    currentPage = currentPage,
+                    currentPage = page,
                     countPages = countPages,
                     generateUrl = pageNumber => Url.Action("Index", new
                     {

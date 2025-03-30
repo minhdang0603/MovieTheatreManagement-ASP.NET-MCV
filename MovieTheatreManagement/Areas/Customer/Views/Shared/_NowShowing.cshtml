@@ -39,12 +39,18 @@
                                 <span class="text-muted">Genres: </span>
                                 <span>
                                     @(movie.MovieGenres != null && movie.MovieGenres.Any()
+                                        ? (movie.MovieGenres.Count() <= 2
                                         ? string.Join(", ", movie.MovieGenres.Select(g => g.Genre.GenreName))
+                                        : string.Join(", ", movie.MovieGenres.Select(g => g.Genre.GenreName).Take(2)) + ", ...")
                                         : "N/A")
                                 </span>
                             </p>
-                            <div class="d-grid gap-2">
+                            <div class="d-grid gap-2 mt-auto">
                                 <a asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-outline-primary btn-sm">View Details</a>
+                                @if (movie.StatusId == 1) // Now Showing
+                                {
+                                    <a asp-area="Customer" asp-controller="Home" asp-action="Details" asp-route-id="@movie.MovieId" class="btn btn-primary btn-sm">Book Tickets</a>
+                                }
                             </div>
                         </div>
                     </div>

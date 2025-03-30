@@ -74,7 +74,8 @@ namespace Services
 					.ThenInclude(s => s.Room)
 				.Include(b => b.Tickets)
 					.ThenInclude(t => t.Seat)
-				.Include(b => b.Payment)
+						.ThenInclude(s => s.Type)
+                .Include(b => b.Payment)
 				.FirstOrDefault(b => b.BookingId == bookingId);
 		}
 
@@ -133,5 +134,44 @@ namespace Services
 			_context.Bookings.Remove(booking);
 		}
 
-	}
+		public (List<Booking> Bookings, int TotalCount) GetPagedBookings(string searchTerm, string status, int? movieId, DateTime? startDate, DateTime? endDate, int pageIndex, int pageSize)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Showtime)
+                    .ThenInclude(s => s.Movie)
+                .Include(b => b.Showtime)
+                    .ThenInclude(s => s.Room)
+                .Include(b => b.Tickets)
+                    .ThenInclude(t => t.Seat)
+				.Include(b => b.Payment)
+                .AsQueryable();
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(b => b.ApplicationUser.Email.Contains(searchTerm));
+            }
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                query = query.Where(b => b.Status == status);
+            }
+            if (movieId != null)
+            {
+                query = query.Where(b => b.Showtime.MovieId == movieId);
+            }
+            if (startDate != null)
+            {
+                query = query.Where(b => b.Showtime.StartTime >= startDate);
+            }
+            if (endDate != null)
+            {
+                query = query.Where(b => b.Showtime.StartTime <= endDate);
+            }
+            var totalCount = query.Count();
+            var bookings = query
+                .OrderByDescending(b => b.Showtime.StartTime)
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            return (bookings, totalCount);
+        }
+    }
 }

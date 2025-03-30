@@ -1,0 +1,220 @@
+﻿@model Booking
+
+@{
+    ViewData["Title"] = "Booking Details";
+
+    string GetStatusBadgeClass(string status) => status?.ToLower() switch
+    {
+        SD.Status_Reserve => "bg-warning",
+        SD.Status_Paid => "bg-success",
+        SD.Status_Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    string GetPaymentStatusBadgeClass(string status) => status?.ToLower() switch
+    {
+        SD.Payment_Pending => "bg-warning",
+        SD.Payment_Approved => "bg-success",
+        SD.Payment_Rejected => "bg-danger",
+        SD.Payment_Refunded => "bg-info",
+        _ => "bg-secondary"
+    };
+
+    bool isPastShowtime = Model.Showtime?.StartTime < DateTime.Now;
+    bool isCancelled = Model.Status?.ToLower() == SD.Status_Cancelled;
+}
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h1 class="h3">
+                Booking <span class="badge bg-secondary">#@Model.BookingId.ToString("D6")</span>
+            </h1>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Bookings
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left column: Booking details -->
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Booking Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <span class="badge @GetStatusBadgeClass(Model.Status)">@Model.Status</span>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <strong>Booking ID:</strong> #@Model.BookingId.ToString("D6")
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <!-- Movie & Showtime Info -->
+                            @if (Model.Showtime?.Movie != null)
+                            {
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <img src="@(string.IsNullOrEmpty(Model.Showtime.Movie.ImageUrl) ? "/api/placeholder/100/150" : Model.Showtime.Movie.ImageUrl)"
+                                        style="width: 100px; height: auto;" class="img-thumbnail" />
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h5 class="mb-1">@Model.Showtime.Movie.Title</h5>
+                                        <p class="mb-1">@Model.Showtime.Movie.Duration minutes</p>
+                                        <p class="mb-2">
+                                            <strong>Showtime:</strong> @Model.Showtime.StartTime.ToString("dddd, MMMM d, yyyy, HH:mm")
+                                        </p>
+                                        <p class="mb-0">
+                                            <strong>Room:</strong> @(Model.Showtime.Room?.Name ?? "Unknown")
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <h6 class="border-bottom pb-2 mb-3">Customer Information</h6>
+                    @if (Model.ApplicationUser != null)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Name:</strong> @Model.ApplicationUser.Name</p>
+                                <p class="mb-1"><strong>Email:</strong> @Model.ApplicationUser.Email</p>
+                                <p class="mb-0"><strong>Phone:</strong> @Model.ApplicationUser.PhoneNumber</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-0"><strong>Date of Birth:</strong> @Model.ApplicationUser.DateOfBirth.ToString("yyyy-MM-dd")</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Seat & Ticket Information -->
+                    <h6 class="border-bottom pb-2 mb-3">Ticket Information</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Total Tickets:</strong> @Model.Tickets.Count</p>
+                            <p class="mb-1">
+                                <strong>Seats:</strong>
+                                @string.Join(", ", Model.Tickets.Select(t => $"{t.Seat?.SeatRow}{t.Seat?.SeatColumn + 1}"))
+                            </p>
+                            <p class="mb-0"><strong>Total Price:</strong> @Model.TotalPrice?.ToString("C")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets List -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Tickets</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ticket #</th>
+                                    <th>Seat</th>
+                                    <th>Type</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ticket in Model.Tickets)
+                                {
+                                    <tr>
+                                        <td>#@ticket.TicketId.ToString("D6")</td>
+                                        <td>@ticket.Seat?.SeatRow@(ticket.Seat?.SeatColumn + 1)</td>
+                                        <td>@(ticket.Seat?.Type?.TypeName ?? "Standard")</td>
+                                        <td>@(ticket.Seat?.Type?.Price?.ToString("C") ?? "N/A")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column: Payment and Actions -->
+        <div class="col-md-4">
+            <!-- Payment Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Payment != null)
+                    {
+                        <div class="mb-3">
+                            <p class="mb-1">
+                                <strong>Payment ID:</strong> #@Model.Payment.PaymentId.ToString("D6")
+                            </p>
+                            <p class="mb-1">
+                                <strong>Status:</strong>
+                                <span class="badge @GetPaymentStatusBadgeClass(Model.Payment.PaymentStatus)">
+                                    @Model.Payment.PaymentStatus
+                                </span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Method:</strong>
+                                @(Model.Payment.PaymentMethod == SD.PaymentMethod_Cash ? "Cash" : "Credit Card")
+                            </p>
+
+                            @if (Model.Payment.PaymentDate.HasValue)
+                            {
+                                <p class="mb-1">
+                                    <strong>Payment Date:</strong>
+                                    @Model.Payment.PaymentDate.Value.ToString("yyyy-MM-dd HH:mm")
+                                </p>
+                            }
+
+                            <p class="mb-1">
+                                <strong>Due Date:</strong>
+                                @Model.Payment.PaymentDueDate.ToString("yyyy-MM-dd")
+                            </p>
+                        </div>
+
+                        <!-- Payment Actions -->
+                        @if (!isCancelled && Model.Payment.PaymentMethod == SD.PaymentMethod_Cash && Model.Payment.PaymentStatus == SD.Payment_Pending)
+                        {
+                            <div class="mb-3">
+                                <h6 class="border-bottom pb-2 mb-2">Payment Actions</h6>
+                                <form asp-action="UpdatePaymentStatus" method="post" class="mb-2">
+                                    <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                                    <input type="hidden" name="paymentStatus" value="@SD.Payment_Approved" />
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-check-circle"></i> Approve Payment
+                                    </button>
+                                </form>
+
+                                <form asp-action="UpdatePaymentStatus" method="post">
+                                    <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                                    <input type="hidden" name="paymentStatus" value="@SD.Payment_Rejected" />
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        <i class="bi bi-x-circle"></i> Reject Payment
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle"></i> No payment information available.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
